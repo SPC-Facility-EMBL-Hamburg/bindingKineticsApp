@@ -1,0 +1,8 @@
+nomkl
+numpy
+pandas
+scipy
+plotly
+kaleido
+matplotlib
+pykingenie

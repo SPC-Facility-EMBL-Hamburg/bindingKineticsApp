@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en" class="vf-no-js" >
+<head>
+  <script>
+  // Detect if JS is on and swap vf-no-js for vf-js on the html element
+  (function(H){H.className=H.className.replace(/\bvf-no-js\b/,'vf-js')})(document.documentElement);
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content=
+  "width=device-width, initial-scale=1">
+  <link rel="stylesheet" media="all" href="https://assets.emblstatic.net/vf/v2.4.5/css/styles.css">
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+</head>
+
+<body class="vf-body vf-stack"><script id="__bs_script__">//<![CDATA[
+    document.write("<script async src='/browser-sync/browser-sync-client.js?v=2.26.14'><\/script>".replace("HOST", location.hostname));
+//]]></script>
+
+<section class="vf-intro" id="an-id-for-anchor">
+
+  <div class="vf-stack">
+
+    <p class="vf-intro__text">KinGenie allows the processing, analysis and visualization of binding kinetics data.</p>
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-input" onclick="myFunction('inputFile')">Input files <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="inputFile" style="display:none">
+
+  <br>
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-bli-input" onclick="myFunction('octetBLI_input')"
+ style="padding-left: 20px;">
+  Octet Biolayer Interferometry <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="octetBLI_input" style="display:none">
+
+  <br>
+
+<p class="vf-intro__text">Input one or many <a href="230309_001.frd" download> files</a> with the '.frd' extension.
+    These are JSON formatted files.
+    Moreover, you can load the <a href="230309_ExpMethod.fmf" download>Method file </a>with extension '.fmf'.
+    All files corresponding to the same experiment should be selected together for loading the data.
+    A complete example folder can be downloaded <a href="test_bli_folder.zip" download>here</a>.
+</p>
+
+    <br>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+  <img src="load_octet_data_help.png" alt="Screenshot showing how to load Octet files into KinGenie" width="900" loading="lazy"/>
+</figure>
+
+</div>
+
+  <br>
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);"
+                                  id="section-link-bli-input" onclick="myFunction('gator_bli')"
+ style="padding-left: 20px;">
+  Gator Biolayer Interferometry <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="gator_bli" style="display:none">
+
+  <br>
+
+<p class="vf-intro__text">Input the csv files with the traces data ('Assay_#_Channel#.csv') and the corresponding
+    files describing the metadata (Setting.ini and ExperimentStep.ini).
+    All files corresponding to the same experiment should be selected together for loading the data.
+</p>
+
+    <br>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+  <img src="load_gator_help.png" alt="Screenshot showing how to load Gator files into KinGenie" width="900" loading="lazy"/>
+</figure>
+
+</div>
+
+    <br>
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-bli-input" onclick="myFunction('kingenie_simulation_csv')"
+ style="padding-left: 20px;">
+  KinGenie simulation csv <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="kingenie_simulation_csv" style="display:none">
+
+  <br>
+
+<p class="vf-intro__text">If you performed a simulation for surface-based binding, you can export the results and import the csv file
+    into KinGenie.
+</p>
+
+    <br>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+  <img src="download_simulation_results.png" alt="Screenshot showing how to export the simulation results" width="700" loading="lazy"/>
+</figure>
+
+</div>
+
+</div>
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-process" onclick="myFunction('processing')">
+    Processing kinetic traces<svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="processing" style="display:none">
+
+  <p class="vf-intro__text">
+      There are several options for processing the kinetics traces. If the operations are
+      performed 'in-place', then the sensor traces will be modified. Otherwise,
+      the sensor traces will remain unchanged, and the new traces will be generated.
+  </p>
+
+ <ul class="vf-intro__text">
+     <li class="vf-list__item ">
+         Align the association phases:
+         For each association step, KinGenie finds the previous step, computes the mean of the last ten points, and subtracts this value from the next steps.
+     </li>
+
+     <li class="vf-list__item ">
+         Subtract baseline:
+         One trace is selected and subtracted from other traces.
+     </li>
+
+     <li class="vf-list__item ">
+        Average:
+         The selected traces are averaged.
+     </li>
+
+     <li class="vf-list__item ">
+         Inter-step correction (dissociation):
+         For each dissociation step, KinGenie finds the previous association step and computes the mean of the last ten points.
+         Then, the difference between this value and the mean of the first ten points is subtracted from the dissociation step.
+     </li>
+
+     <li class="vf-list__item ">
+         Subtract experiment:
+         Given two different experiments with an equal number of sensors, equal number of steps and time step,
+         the signal data from one experiment is subtracted from the signal data from the other experiment, sensor by sensor.
+     </li>
+
+
+ </ul>
+
+  <p class="vf-intro__text">
+      A common workflow would be to load the data, align the association phases, subtract the baseline, and then go to the analysis section.
+      The inter-step correction is only necessary if there are big jumps due to buffer mismatch. For fast off rates, it is not recommended because data may be lost.
+  </p>
+
+</div>
+
+  <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-surface" onclick="myFunction('surfaceBased')"
+ >Surface-based binding <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="surfaceBased" style="display:none">
+
+  <p class="vf-intro__text">
+      In this case, one of the interacting partners is attached to a surface (e.g., a sensor chip), and the other partner flows over the surface at a constant concentration.
+  </p>
+<br>
+
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link"
+                                      href="JavaScript:Void(0);" id="section-link-beforeExperimentSurfaceBased"
+                                      onclick="myFunction('beforeExperimentSurfaceBased')"
+ style="padding-left: 20px;">
+  Planning an experiment <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="beforeExperimentSurfaceBased" style="display:none">
+
+<p class="vf-intro__text">
+    Appropriate controls are essential to obtain useful data. Find below a list of recommendations based on
+    <a href="https://doi.org/10.1002/(sici)1099-1352(199909/10)12:5%3C279::aid-jmr473%3E3.0.co;2-3"
+       target="_blank">David G. Myszka (1999)</a>.
+</p>
+
+<p class="vf-intro__text">
+<strong>1. Blank injection:</strong>
+    Inject buffer alone over a surface with the ligand to identify signal artifacts from the injection process.
+    The signal from the blank injection should be subtracted from the analyte signal.
+</p>
+
+<p class="vf-intro__text">
+    <strong>2. Reference surface:</strong>
+    Inject the analyte (at the highest concentration) over a surface without the ligand (or with a non-binding protein)
+    to control for non-specific binding.
+    Ideally, no signal change should be observed.
+    To perform double-reference subtraction, this control should be performed for each analyte concentration.
+</p>
+
+<p class="vf-intro__text">
+    <strong>3. Analyte concentrations:</strong>
+    Use a series of at least 5–7 analyte concentrations that span tenfold above and below the expected \( K_{\text{d}} \).
+</p>
+
+<p class="vf-intro__text">
+    <strong>4. Mass transport limitation (MTL):</strong>
+    Run the same analyte at different flow rates or ligand loading levels
+    to verify that binding is not limited by diffusion.
+    To minimize MTL effects, use a high flow rate and the lowest possible loading level that still provides a good signal-to-noise ratio.
+</p>
+
+<p class="vf-intro__text">
+    <strong>5. Ligand activity:</strong>
+    Confirm that the immobilized ligand is active and correctly captured by
+    injecting a known positive control analyte.
+</p>
+
+<p class="vf-intro__text">
+    <strong>6. Use oriented immobilization:</strong>
+    Avoid random coupling procedures, such as those involving primary amines, which introduce surface heterogeneity.
+    Prioritize capturing methods such as antibodies or fusion tags, that create homogeneous surfaces.
+</p>
+
+
+
+</div>
+
+    <br>
+
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneSurface" onclick="myFunction('oneToOne')"
+ style="padding-left: 20px;">
+  One to one <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="oneToOne" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equation of the system is:
+</p>
+
+$$
+\large{
+    A + B \rightleftharpoons AB
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( A \) is the attached molecule, \( B \) is the molecule flowing and \( AB \) is the complex. The signal  \( S \) is proportional to the concentration of the complex, and follows the differential equation:
+</p>
+
+$$
+\large{
+   \frac{dS}{dt} = \frac{k_{\text{off}}}{K_{\text{d}}} [B]  (S_{\text{max}} - S) - k_{\text{off}}  S
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( k_{\text{off}} \) is the dissociation constant, \( K_{\text{d}} \) is the equilibrium dissociation constant, and \( S_{\text{max}} \)
+    is the maximum signal (at infinite concentration of \( B \)).
+    The association rate constant \( k_{\text{on}} \) is given by:
+</p>
+
+$$
+\large{
+   k_{\text{on}} = \frac{k_{\text{off}}}{K_{\text{d}}}
+   }
+$$
+
+<p class="vf-intro__text">
+    During the dissociation step, the concentration of \( B \) is zero, simplifying the signal equation to:
+</p>
+
+$$
+\large{
+   \frac{dS}{dt} =  - k_{\text{off}}  S
+   }
+$$
+
+<p class="vf-intro__text">
+    <strong>References:</strong>
+    <ul>
+    <li>
+        Schuck, P., & Zhao, H. (2010). The role of mass transport limitation and surface heterogeneity in the biophysical characterization of macromolecular binding processes by SPR biosensing. <em>Surface plasmon resonance: methods and protocols</em>, 15-54.
+    </li>
+    <!-- Additional list items can go here -->
+    </ul>
+</p>
+
+</div>
+
+    <br>
+
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneMTLSurface"
+                                      onclick="myFunction('oneToOneMTL')"
+ style="padding-left: 20px;">
+  One to one (mass transport limitation)<svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="oneToOneMTL" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equations of the system are:
+</p>
+
+$$
+\large{
+B_{\text{bulk}} \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{tr}}}_{k_{\text{tr}}}} B_{\text{surface}}
+}
+$$
+
+$$
+\large{
+B_{\text{surface}} + A \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{on}}}_{k_{\text{off}}}} AB
+}
+$$
+
+<p class="vf-intro__text">
+    where \( A \) is the attached molecule, \( B \) is the molecule flowing and \( AB \) is the complex.
+    The signal  \( S \) is proportional to the concentration of the complex, and follows the differential equation:
+</p>
+
+$$
+\large{
+\frac{dS}{dt} = \frac{k_{\text{off}}}{K_{\text{d}}} \cdot [B_{\text{surface}}] \cdot (S_{\text{max}} - S) - k_{\text{off}} \cdot S
+   }
+$$
+
+<p class="vf-intro__text">
+    with
+</p>
+
+$$
+\large{
+\frac{d [B_{\text{surface}}]}{dt} = k_{\text{tr}} \cdot ([B]_{\text{0}} - [B_{\text{surface}}]) - \frac{dS}{dt}
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( k_{\text{off}} \) is the dissociation constant, \( K_{\text{d}} \) is the equilibrium dissociation constant, and \( S_{\text{max}} \)
+    is the maximum signal (at infinite concentration of \( B \)).
+    The association rate constant \( k_{\text{on}} \) is given by:
+</p>
+
+$$
+\large{
+   k_{\text{on}} = \frac{k_{\text{off}}}{K_{\text{d}}}
+   }
+$$
+
+<p class="vf-intro__text">
+    During the dissociation step, the concentration of \( B \) is zero, simplifying the signal equation to:
+</p>
+
+$$
+\large{
+\frac{dS(t)}{dt} = \frac{-k_{\text{off}} S(t)}{1 + \frac{k_{\text{on}}}{k_{\text{tr}}} \left( S_{\max} - S(t) \right)}  }
+$$
+
+<p class="vf-intro__text">
+    <strong>References:</strong>
+    <ul>
+    <li>
+        Schuck, P., & Zhao, H. (2010). The role of mass transport limitation and surface heterogeneity in the biophysical characterization of macromolecular binding processes by SPR biosensing. <em>Surface plasmon resonance: methods and protocols</em>, 15-54.
+    </li>
+
+    <!-- Additional list items can go here -->
+    </ul>
+</p>
+
+</div>
+
+    <br>
+
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneIFSurface"
+                                      onclick="myFunction('oneToOneIF')"
+ style="padding-left: 20px;">
+  One to one (induced fit) <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="oneToOneIF" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equations of the system are:
+</p>
+
+$$
+\large{
+A + B \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{on}}}_{k_{\text{off}}}} AB_{\text{int}}
+}
+$$
+
+$$
+\large{
+    AB_{\text{int}} \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{c}}}_{k_{\text{rev}}}} AB
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( A \) is the attached molecule, \( B \) is the molecule flowing, \( AB_{\text{int}} \) is the intermediate complex,
+    and \( AB \) is the induced complex. Regarding the signal, the set of non-redundant differential equations is:
+</p>
+
+$$
+\begin{aligned}
+-\frac{dS}{dt} &= (- k_{\text{off}} - k_{\text{on}} [B]) S - k_{\text{off}} S_1 \\
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\frac{dS_1}{dt} &= (- k_\text{c}) S + (- k_\text{c} - k_{\text{rev}}) S_1
+\end{aligned}
+$$
+
+<p class="vf-intro__text">
+    where \( S \) is the total signal, and \( S_{\text{1}} \) is the signal produced by the induced complex only.
+    During the dissociation step, the concentration of \( B \) is zero, simplifying the differential equations to:
+</p>
+
+$$
+\begin{aligned}
+-\frac{dS}{dt} &= (- k_{\text{off}}) S - k_{\text{off}} S_1 \\
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\frac{dS_1}{dt} &= (- k_\text{c}) S + (- k_\text{c} - k_{\text{rev}}) S_1
+\end{aligned}
+$$
+
+</div>
+
+<br>
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneCSSurface"
+                                      onclick="myFunction('oneToOneCS')"
+ style="padding-left: 20px;">
+  One to one (conformational selection) <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="oneToOneCS" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equations of the system are:
+</p>
+
+$$
+\large{
+A_\text{inactive} \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{c}}}_{k_{\text{rev}}}} A_\text{active}
+}
+$$
+
+$$
+\large{
+    A_\text{active} + B \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{on}}}_{k_{\text{off}}}} AB
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( A_\text{inactive} \) is the attached molecule in the inactive state, \( A_\text{active} \)
+    is the attached molecule in the active state (capable of binding \( B \)),
+    \( B \) is the molecule flowing, and \( AB \) is the complex.
+    Regarding the signal, the set of non-redundant differential equations is:
+</p>
+
+$$
+\begin{aligned}
+\frac{dS_1}{dt} &= (- k_c - k_{\text{rev}}) S_1 - k_{\text{rev}} S
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\frac{dS}{dt} &= (- k_{\text{on}} [B]) S_1 + (- k_{\text{on}} [B] - k_{\text{off}}) S
+\end{aligned}
+$$
+
+<p class="vf-intro__text">
+    where \( S \) is the total signal, and \( S_{\text{1}} \) is some value proportional to
+    the amount of \( A_{\text{inactive}} \).
+    During the dissociation step, the concentration of \( B \) is zero, simplifying the differential equations to:
+</p>
+
+$$
+\begin{aligned}
+\frac{dS_1}{dt} &= (- k_c - k_{\text{rev}}) S_1 - k_{\text{rev}} S
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\frac{dS}{dt} &=  - k_{\text{off}} S
+\end{aligned}
+$$
+
+</div>
+
+</div>
+
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link" onclick="myFunction('solutionBased')"
+>Solution-based binding<svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="solutionBased" style="display:none">
+
+  <p class="vf-intro__text">
+      In this case, the interacting species are in solution and the concentrations of all species change over time.
+  </p>
+
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneSolution"
+                                      onclick="myFunction('oneToOneSolution')"
+ style="padding-left: 20px;">
+  One to one <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="oneToOneSolution" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equation of the system is:
+</p>
+
+$$
+\large{
+    A + B \rightleftharpoons AB
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( A \) and \( B \) are the two interacting partners, and \( AB \) is the complex.
+    The concentration of the complex follows the differential equation:
+</p>
+
+$$
+\large{
+\frac{d[\text{AB}]}{dt} = k_{\text{on}}  [A]  [B] - k_{\text{off}}  [\text{AB}]
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( k_{\text{off}} \) is the dissociation constant, \( k_{\text{on}} \) is the association constant.
+    The equilibrium dissociation constant \( K_{\text{d}} \) is given by:
+</p>
+
+
+$$
+\large{
+   K_{\text{d}} = \frac{k_{\text{off}}}{k_{\text{on}}}
+   }
+$$
+
+</div>
+<br>
+
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneIFSolution"
+                                      onclick="myFunction('oneToOneIFSolution')"
+ style="padding-left: 20px;">
+  One to one (induced fit) <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="oneToOneIFSolution" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equations of the system are:
+</p>
+
+$$
+\large{
+A + B \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{on}}}_{k_{\text{off}}}} AB_{\text{int}}
+}
+$$
+
+$$
+\large{
+    AB_{\text{int}} \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{c}}}_{k_{\text{rev}}}} AB
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( A \) and \( B \) are the interacting molecules, \( AB_{\text{int}} \) is the intermediate complex,
+    and \( AB \) is the induced complex. The set of non-redundant differential equations is:
+</p>
+
+$$
+\large{
+   \frac{d[B]}{dt} = k_{\text{off}} ([B]_{\text{0}} - [B] - [AB]) -
+    k_{\text{on}} ([B] - [B]_{\text{0}} + [A]_{\text{0}})[B]
+    }
+$$
+
+$$
+\large{
+    \frac{d[AB]}{dt} = k_{\text{c}} ([B]_{\text{0}} - [B] - [AB]) - k_{\text{rev}} [AB]
+    }
+$$
+
+<p class="vf-intro__text">
+    where \( [B]_{\text{0}} \) and \( [A]_{\text{0}} \) are the total concentrations of \( B \) and \( A \), respectively.
+</p>
+
+$$
+\large{
+    [B]_{\text{0}} = [B] + [AB] + [AB_{\text{int}}]
+    }
+$$
+
+ $$
+\large{
+    [A]_{\text{0}} = [A] + [AB] + [AB_{\text{int}}]
+    }
+$$
+
+<p class="vf-intro__text">
+    The smallest dominant relaxation rate is given by:
+</p>
+
+$$
+\large{
+k_{\text{obs,1}} = k_{\text{c}} + k_{\text{rev}} + \frac{\gamma}{2} - \frac{\sqrt{\gamma^2 + 4 k_{\text{off}} k_{\text{rev}}}}{2}
+}
+$$
+
+<p class="vf-intro__text">
+   while the second relaxation rate is given by:
+</p>
+
+$$
+\large{
+k_{\text{obs,2}} = k_{\text{c}} + k_{\text{rev}} + \frac{\gamma}{2} + \frac{\sqrt{\gamma^2 + 4 k_{\text{off}} k_{\text{rev}}}}{2}
+}
+$$
+
+ <p class="vf-intro__text">
+   where,
+</p>
+
+$$
+\large{
+\gamma = -k_{\text{c}} - k_{\text{rev}} + k_{\text{off}} + k_{\text{on}} (\delta - K_\text{D}^{\text{app}})
+}
+$$
+
+$$
+\large{
+\delta = \sqrt{(\text{[B]}_{\text{0}} - \text{[A]}_{\text{0}} + K_\text{D}^{\text{app}})^2 + 4 \text{[A]}_{\text{0}} K_\text{D}^{\text{app}}}
+}
+$$
+
+$$
+\large{
+K_\text{D}^{\text{app}} = \frac{k_{\text{off}} k_{\text{c}}}{k_{\text{on}} (k_{\text{c}} + k_{\text{rev}})}
+}
+$$
+
+<p class="vf-intro__text">
+    <strong>References:</strong>
+    <ul>
+    <li>
+        Paul, F., & Weikl, T. R. (2016).
+        How to distinguish conformational selection and induced fit based on chemical relaxation rates. PLoS computational biology, 12(9), e1005067.
+    </li>
+    <!-- Additional list items can go here -->
+    </ul>
+</p>
+
+</div>
+<br>
+
+        <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneCSSolution"
+                                      onclick="myFunction('oneToOneCSSolution')"
+ style="padding-left: 20px;">
+  One to one (conformational selection) <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="oneToOneCSSolution" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equations of the system are:
+</p>
+
+$$
+\large{
+A_\text{inactive} \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{c}}}_{k_{\text{rev}}}} A_\text{active}
+}
+$$
+
+$$
+\large{
+    A_\text{active} + B \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{on}}}_{k_{\text{off}}}} AB
+   }
+$$
+
+<p class="vf-intro__text">
+    where \( A_\text{inactive} \) is the 'receptor' molecule in the inactive state, \( A_\text{active} \)
+    is the 'receptor' molecule in the active state (capable of binding \( B \)),
+    \( B \) is the ligand, and \( AB \) is the complex.
+    The set of non-redundant differential equations is:
+</p>
+
+$$
+\large{
+\frac{d}{dt}[A_{\text{active}}] = k_{\text{c}} ([A]_{\text{0}} - [A_{\text{active}}]) - (k_{\text{rev}} +
+    k_{\text{on}}[B])[A_{\text{active}}] + (k_{\text{off}} - k_{\text{c}})([B]_{\text{0}} - [B])    }
+$$
+
+$$
+\large{
+\frac{d}{dt}[B] = k_{\text{off}} ([B]_{\text{0}} - [B]) - k_{\text{on}}[A_{\text{active}}][B]    }
+$$
+
+<p class="vf-intro__text">
+    where \( [B]_{\text{0}} \) and \( [A]_{\text{0}} \) are the total concentrations of \( B \) and \( A \), respectively.
+</p>
+
+$$
+\large{
+    [B]_{\text{0}} = [B] + [AB]
+    }
+$$
+
+ $$
+\large{
+    [A]_{\text{0}} = [A]_{\text{inactive}} + [A]_{\text{active}} + [AB]
+    }
+$$
+
+<p class="vf-intro__text">
+    The smallest dominant relaxation rate is given by:
+</p>
+
+$$
+\large{
+k_{\text{obs,1}} = k_{\text{c}} + \frac{\alpha}{2} - \frac{\sqrt{\alpha ^2 + \beta}}{2}
+}
+$$
+
+<p class="vf-intro__text">
+   while the second relaxation rate is given by:
+</p>
+
+$$
+\large{
+k_{\text{obs,2}} = k_{\text{c}} + \frac{\alpha}{2} + \frac{\sqrt{\alpha ^2 + \beta}}{2}}
+$$
+
+ <p class="vf-intro__text">
+   where,
+</p>
+
+$$
+\large{
+    \alpha = k_{\text{rev}} - k_{\text{c}}
+}
+$$
+
+$$
+\large{
+\delta = \sqrt{(\text{[B]}_{\text{0}} - \text{[A]}_{\text{0}} + K_\text{D}^{\text{app}})^2 + 4 \text{[A]}_{\text{0}} K_\text{D}^{\text{app}}}
+}
+$$
+
+$$
+\large{
+K_\text{D}^{\text{app}} = \frac{k_{\text{off}} k_{\text{c}}}{k_{\text{on}} (k_{\text{c}} + k_{\text{rev}})}
+}
+$$
+
+<p class="vf-intro__text">
+    <strong>References:</strong>
+    <ul>
+    <li>
+        Paul, F., & Weikl, T. R. (2016).
+        How to distinguish conformational selection and induced fit based on chemical relaxation rates. PLoS computational biology, 12(9), e1005067.
+    </li>
+    <!-- Additional list items can go here -->
+    </ul>
+</p>
+
+</div>
+<br>
+
+</div>
+
+  <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-surface" onclick="myFunction('fitting')"
+ >Fitting <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="fitting" style="display:none">
+
+  <p class="vf-intro__text">
+      For now, KinGenie only supports surface-based binding models.
+      The steady-state data can be analysed with the one-to-one model,
+      while the kinetic data can be also analysed with the one-to-one mass transport limitation (MTL) model.
+      Fitting the steady-state will provide the equilibrium dissociation constant \( K_{\text{d}} \).
+      Fitting the kinetic data will provide the equilibrium dissociation constant \( K_{\text{d}} \) and
+      the dissociation rate constant \( k_{\text{off}} \).
+  </p>
+
+  <p class="vf-intro__text">
+      The fittings are based on numerical integration of the differential equations and the minimization
+      of the sum of the squared residuals between the experimental data and the model predictions.
+      When creating a new dataset for analysis, traces with the same sample ID are fitted with global parameters (e.g., \( K_{\text{d}} \) , \( k_{\text{off}} \)).
+      If the option 'Smax Linked By Sensor' is activated when doing the fitting, the \( S_{\text{max}} \) parameter is shared between traces
+      with the same sample ID and replicate number.
+  </p>
+
+  <p class="vf-intro__text">
+      When fitting the steady-state data, the asymmetric confidence intervals
+      are calculated automatically. When fitting the kinetic data (association and dissociation phases),
+      the asymmetric confidence intervals are calculated by pressing on the button
+      'e. Confidence interval'.
+      Please remember that low error values do not necessarily mean that the selected model
+      is the one describing the underlying data generating process.
+      For example, if the binding process follows a one-to-one with
+      MTL model, the fitted parameters of a one-to-one model (without MTL) may have low errors,
+      but be still far-off from the true values.
+  </p>
+<br>
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);"
+                                      id="section-link-kobs" onclick="myFunction('observedConstants')"
+ style="padding-left: 20px;">
+  Observed constants <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="observedConstants" style="display:none">
+
+   <p class="vf-intro__text">
+      When fitting the association phase with the one-to-one binding model,
+       a plot of the observed constants versus ligand concentration is provided.
+       The observed constants are fitted independently for each trace, using a single exponential function:
+  </p>
+
+$$
+\large{
+Y = a0 + a1*\exp(-k_{\text{obs}} t)
+}
+$$
+
+   <p class="vf-intro__text">
+       In the ideal case, the observed constants should be linear with the ligand concentration.
+  </p>
+
+</div>
+</div>
+
+</section>
+
+  <!-- IE11 polyfill JS -->
+  <script nomodule crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?flags=gated&features=default"></script>
+  <script src="https://assets.emblstatic.net/vf/v2.4.5/scripts/scripts.js"></script>
+
+  <!-- Hide div element onclick JS -->
+  <script>
+    function myFunction(divID) {
+      var x = document.getElementById(divID);
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+    }
+  </script>
+
+
+</body>
+</html>

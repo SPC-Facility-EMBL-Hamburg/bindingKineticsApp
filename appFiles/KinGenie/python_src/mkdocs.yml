@@ -1,0 +1,10 @@
+site_name: KinGenie (Python codebase)
+use_directory_urls: false
+theme:
+  name: "material"
+  font: false
+nav:
+  - Documentation: index.md
+  - Reference: reference.md
+plugins:
+  - mkdocstrings
