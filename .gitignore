@@ -1,0 +1,45 @@
+# R specific
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.Rapp.history
+*_cache/
+/cache/
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+myenv/
+*.egg-info/
+dist/
+build/
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific
+*.log
+*.tmp
+
+# Shiny specific
+rsconnect/
