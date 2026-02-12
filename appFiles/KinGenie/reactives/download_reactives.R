@@ -29,17 +29,17 @@ output$download_curves <- downloadHandler(
 
         for (fit in pyKinetics$fittings) {
 
-            lig_conc <- fit$lig_conc
+            lig_conc <- fit$lig_conc_lst
 
             for (i in 1:length(lig_conc)) {
 
                 l   <- as.numeric(lig_conc[[i]])
 
-                x1   <- fit$time_assoc[[i]]
-                y1   <- fit$assoc[[i]]
+                x1   <- fit$time_assoc_lst[[i]]
+                y1   <- fit$assoc_lst[[i]]
 
-                x2   <- fit$time_disso[[i]]
-                y2   <- fit$disso[[i]]
+                x2   <- fit$time_disso_lst[[i]]
+                y2   <- fit$disso_lst[[i]]
 
                 for (j in 1:ncol(y1)) {
 

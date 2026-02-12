@@ -843,6 +843,7 @@ observeEvent(input$submitMerge,{
     exp <- pyKinetics$experiments[[input$selectedExperiment]]
 
     df_steps <- exp$df_steps
+    df_steps <- pandas_to_r(df_steps)
 
     step_names <- unique(df_steps$Name)
 

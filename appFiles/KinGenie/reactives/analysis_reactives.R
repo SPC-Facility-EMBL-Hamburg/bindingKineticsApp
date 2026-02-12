@@ -191,17 +191,19 @@ observeEvent(input$triggerCreateDataset, {
 
     }
 
-    reactives$is_single_cycle       <- any(pyKinetics$get_experiment_properties('is_single_cycle',fittings=TRUE))
+    reactives$is_single_cycle <- any(pyKinetics$get_experiment_properties('is_single_cycle',fittings=TRUE))
 
     if (!reactives$is_single_cycle) {
 
         # include the tabPanel("Steady-state",plotlyOutput("steady_state"))
         tab <- tabPanel("Steady-state",plotlyOutput("steady_state"))
         # Append the Tab with the steady-state plot
-        appendTab(
+        insertTab(
           inputId='tabBoxFit',
           tab=tab,
-          session = session
+          session = session,
+          target = "Assoc. and diss. traces",
+          position = "after"
         )
         reactives$ss_plot_shown <- TRUE
 
@@ -300,10 +302,12 @@ observeEvent(input$triggerFitting, {
         # include the tabPanel("Steady-state",plotlyOutput("steady_state"))
         tab <- tabPanel("Steady-state",plotlyOutput("steady_state"))
         # Append the Tab with the steady-state plot
-        appendTab(
+        insertTab(
           inputId='tabBoxFit',
           tab=tab,
-          session = session
+          session = session,
+          target = "Assoc. and diss. traces",
+          position = "after"
         )
         reactives$ss_plot_shown <- TRUE
 
@@ -311,12 +315,12 @@ observeEvent(input$triggerFitting, {
         tab <- tabPanel("Fitted params (Steady-state)",tableOutput("fittingInfoSS"))
 
         # Append the Tab with the steady-state fitted parameters
-        appendTab(
+        insertTab(
           inputId='tabBoxFit',
           tab=tab,
-          select = FALSE,
-          menuName = NULL,
-          session = session
+          session = session,
+          target = "Steady-state",
+          position = "after"
         )
 
     } else {
@@ -392,12 +396,12 @@ observeEvent(input$submitKineticsFitting, {
     tab <- tabPanel("Fitted params (Kinetics)",tableOutput("fittingInfoKinetics"))
 
     # Append the Tab with the kinetic fitted parameters
-    appendTab(
+    insertTab(
       inputId='tabBoxFit',
       tab=tab,
-      select = FALSE,
-      menuName = NULL,
-      session = session
+      session = session,
+      target = "Assoc. and diss. traces",
+      position = "after"
     )
 
     c1 <- fittingModel == 'one_to_one'
@@ -466,12 +470,12 @@ observeEvent(input$triggerAsymError, {
     tab <- tabPanel("Asymmetric error",tableOutput("fittingInfoKineticsCI95"))
 
     # Append the Tab with the asymmetric error
-    appendTab(
+    insertTab(
       inputId='tabBoxFit',
       tab=tab,
-      select = FALSE,
-      menuName = NULL,
-      session = session
+      session = session,
+      target = "Fitted params (Kinetics)",
+      position = "after"
     )
 
     popUpSuccess("Asymmetric error calculated for K_d and k_off.")

@@ -6,12 +6,19 @@ render_ligand_info_df <- function(){
 
             pyKinetics$merge_ligand_conc_df()
 
-            return(render_combined_ligand_conc_df(pyKinetics$combined_ligand_conc_df))
+            py_df <- pyKinetics$combined_ligand_conc_df
+            df <- pandas_to_r(py_df)
+
+            return(render_combined_ligand_conc_df(df))
 
         } else {
 
             pyKinetics$merge_conc_df_solution()
-            return(render_combined_ligand_conc_df_solution(pyKinetics$combined_conc_df))
+
+            py_df <- pyKinetics$combined_conc_df
+            df <- pandas_to_r(py_df)
+
+            return(render_combined_ligand_conc_df_solution(df))
 
         }
 
@@ -30,7 +37,8 @@ output$stepsInfo <- renderDT({
 
     dfs <- lapply(pyKinetics$experiments, function(exp) {
 
-        df <- exp$df_steps
+        py_df <- exp$df_steps
+        df <- pandas_to_r(py_df)
 
         if (n > 1) df['Name'] <- exp$name
 
@@ -66,7 +74,8 @@ output$fittingInfoSS <- renderTable({
 
     for (name in pyKinetics$fittings_names) {
 
-        df <- pyKinetics$fittings[[name]]$fit_params_ss
+        py_df <- pyKinetics$fittings[[name]]$fit_params_ss
+        df <- pandas_to_r(py_df)
         dfs[[length(dfs)+1]] <- df
 
     }
@@ -84,9 +93,11 @@ output$fittingInfoKinetics <- renderTable({
 
     for (name in pyKinetics$fittings_names) {
 
-        dfs[[length(dfs)+1]] <- pyKinetics$fittings[[name]]$fit_params_kinetics
-        # Include the experiment name
-        dfs[[length(dfs)]]$Name <- name
+        py_df <- pyKinetics$fittings[[name]]$fit_params_kinetics
+        df <- pandas_to_r(py_df)
+        df$Name <- name
+
+        dfs[[length(dfs)+1]] <- df
 
     }
 
@@ -105,9 +116,11 @@ output$fittedParamsBoundaries <- renderDT({
 
     for (name in pyKinetics$fittings_names) {
 
-        dfs[[length(dfs)+1]] <- pyKinetics$fittings[[name]]$fitted_params_boundaries
-        # Include the experiment name
-        dfs[[length(dfs)]]$Name <- name
+        py_df <- pyKinetics$fittings[[name]]$fitted_params_boundaries
+        df <- pandas_to_r(py_df)
+        df$Name <- name
+
+        dfs[[length(dfs)+1]] <- df
 
     }
 
@@ -151,10 +164,11 @@ output$fittingInfoKineticsCI95 <- renderTable({
 
     for (name in pyKinetics$fittings_names) {
 
-        dfs[[length(dfs)+1]] <- pyKinetics$fittings[[name]]$fit_params_kinetics_ci95
+        py_df <- pyKinetics$fittings[[name]]$fit_params_kinetics_ci95
+        df <- pandas_to_r(py_df)
+        df$Name <- name
 
-        # Include the experiment name
-        dfs[[length(dfs)]]$Name <- name
+        dfs[[length(dfs)+1]] <- df
 
     }
 

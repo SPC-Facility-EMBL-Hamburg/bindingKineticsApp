@@ -81,7 +81,10 @@ output$tracesAssDiss <- renderPlotly({
     cnt <- 1
     for (exp in pyKinetics$experiments) {
 
-        selected <- grepl('ASS',exp$df_steps$Type)
+        py_df <- exp$df_steps
+        df <- pandas_to_r(py_df)
+
+        selected <- grepl('ASS',df$Type)
 
         xs <- exp$xs
         ys <- exp$ys

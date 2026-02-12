@@ -17,6 +17,22 @@ welcomeMessage <- function() {
      })
 }
 
+pandas_to_r <- function(py_df) {
+
+    cols <- py_df$columns$to_list()
+
+    # Convert each column properly
+    r_list <- lapply(cols, function(col) {
+        as.vector(py_df[[col]]$to_numpy())
+    })
+
+    # Make data.frame and assign names
+    r_df <- as.data.frame(r_list)
+    names(r_df) <- cols
+
+    return(r_df)
+}
+
 # Return a string with the pattern %H:%M
 get_hour_minute_sec <- function() {
     time_str <- as.character(Sys.time())
