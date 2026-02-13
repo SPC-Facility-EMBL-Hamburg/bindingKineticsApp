@@ -18,10 +18,12 @@ append_sample_plate_plot <- function(experiment_name) {
 
         sample_conc_labeled <- pySingleExp$sample_conc_labeled
 
-        fig <- plot_plate_info(sample_row,sample_column,sample_type,
-                               sample_id,sample_conc_labeled,
-                               experiment_name,
-                               font_size = input$plot_axis_size)
+        fig <- plot_plate_info(
+            sample_row,sample_column,sample_type,
+            sample_id,sample_conc_labeled,
+            experiment_name,
+            plot_config = reactives$plot_config
+        )
 
         return(fig)
 
@@ -40,9 +42,14 @@ output$traces <- renderPlotly({
     xs_all <- lapply(pyKinetics$experiments,function(x) x$xs)
     ys_all <- lapply(pyKinetics$experiments,function(x) x$ys)
 
-    fig <- plot_traces_all(xs_all,ys_all,legend_df$Legend,legend_df$Color,legend_df$Show,
-    input$plot_width,input$plot_height,input$plot_type,input$plot_axis_size,
-    input$plot_show_grid_x,input$plot_show_grid_y,input$plot_marker_size,input$plot_line_width)
+    fig <- plot_traces_all(
+        xs_all,
+        ys_all,
+        legend_df$Legend,
+        legend_df$Color,
+        legend_df$Show,
+        plot_config = reactives$plot_config
+    )
 
     return(fig)
 
@@ -59,9 +66,14 @@ output$tracesInSolution <- renderPlotly({
     xs_all <- lapply(pyKinetics$experiments,function(x) x$xs)
     ys_all <- lapply(pyKinetics$experiments,function(x) x$ys)
 
-    fig <- plot_traces_all(xs_all,ys_all,legend_df$Legend,legend_df$Color,legend_df$Show,
-    input$plot_width,input$plot_height,input$plot_type,input$plot_axis_size,
-    input$plot_show_grid_x,input$plot_show_grid_y,input$plot_marker_size,input$plot_line_width)
+    fig <- plot_traces_all(
+        xs_all,
+        ys_all,
+        legend_df$Legend,
+        legend_df$Color,
+        legend_df$Show,
+        plot_config = reactives$plot_config
+    )
 
     return(fig)
 
@@ -99,9 +111,14 @@ output$tracesAssDiss <- renderPlotly({
 
     }
 
-    fig <- plot_traces_all(xs_all,ys_all,legend_df$Legend,legend_df$Color,legend_df$Show,
-    input$plot_width,input$plot_height,input$plot_type,input$plot_axis_size,
-    input$plot_show_grid_x,input$plot_show_grid_y,input$plot_marker_size,0)
+    fig <- plot_traces_all(
+        xs_all,
+        ys_all,
+        legend_df$Legend,
+        legend_df$Color,
+        legend_df$Show,
+        plot_config = reactives$plot_config
+    )
 
     return(fig)
 
@@ -112,16 +129,10 @@ output$steady_state <- renderPlotly({
     req(reactives$fit_dataset_loaded)
     req(reactives$surface_based_binding)
 
-    fig <- plot_steady_state(pyKinetics$fittings,
-                             plot_width = input$plot_width_fit,
-                             plot_height= input$plot_height_fit,
-                             plot_type= input$plot_type_fit,
-                             font_size = input$plot_axis_size_fit,
-                             show_grid_x = input$plot_show_grid_x_fit,
-                             show_grid_y = input$plot_show_grid_y_fit,
-                             marker_size = input$plot_marker_size_fit,
-                             line_width  = input$plot_line_width_fit,
-                             plot_fit    = reactives$ss_fit_done
+    fig <- plot_steady_state(
+        pyKinetics$fittings,
+        plot_config = reactives$plot_config,
+        plot_fit    = reactives$ss_fit_done
     )
 
     return(fig)
@@ -158,15 +169,10 @@ output$diagnostic_plot <- renderPlotly({
 
     df$experiment_name <- factor(df$experiment_name,levels = names(experiments))
 
-    fig <- diagnostic_plot(df,
-                           plot_width = input$plot_width_fit,
-                           plot_height= input$plot_height_fit,
-                           plot_type= input$plot_type_fit,
-                           font_size = input$plot_axis_size_fit,
-                           show_grid_x = input$plot_show_grid_x_fit,
-                           show_grid_y = input$plot_show_grid_y_fit,
-                           marker_size = input$plot_marker_size_fit,
-                           line_width  = input$plot_line_width_fit)
+    fig <- diagnostic_plot(
+        df,
+        plot_config = reactives$plot_config
+    )
 
     return(fig)
 
@@ -177,22 +183,12 @@ output$tracesAssDissFit <- renderPlotly({
     req(reactives$fit_dataset_loaded)
     req(reactives$surface_based_binding)
 
-    fig <- plot_association_dissociation(pyKinetics$fittings,
-                                         plot_width = input$plot_width_fit,
-                                         plot_height= input$plot_height_fit,
-                                         plot_type= input$plot_type_fit,
-                                         font_size = input$plot_axis_size_fit,
-                                         show_grid_x = input$plot_show_grid_x_fit,
-                                         show_grid_y = input$plot_show_grid_y_fit,
-                                         marker_size = input$plot_marker_size_fit,
-                                         line_width  = input$plot_line_width_fit,
-                                         plot_assoc  = TRUE,
-                                         plot_disso  = TRUE,
-                                         plot_fit    = reactives$kinetics_fit_done,
-                                         split_by_smax_id = input$split_replicates,
-                                         max_points_per_plot = input$max_points_per_plot,
-                                         smooth_curves_fit = input$smooth_curves_fit,
-                                         rolling_window = input$median_window_size
+    fig <- plot_association_dissociation(
+        pyKinetics$fittings,
+        plot_config = reactives$plot_config,
+        plot_assoc  = TRUE,
+        plot_disso  = TRUE,
+        plot_fit    = reactives$kinetics_fit_done
     )
 
     return(fig)
@@ -211,19 +207,10 @@ output$residuals <- renderPlotly({
         fig <- plot_association_dissociation_residuals(
 
             pyKinetics$fittings,
-            plot_width = input$plot_width_fit,
-            plot_height= input$plot_height_fit,
-            plot_type= input$plot_type_fit,
-            font_size = input$plot_axis_size_fit,
-            show_grid_x = input$plot_show_grid_x_fit,
-            show_grid_y = input$plot_show_grid_y_fit,
-            marker_size = input$plot_marker_size_fit,
-            line_width  = input$plot_line_width_fit,
+            plot_config = reactives$plot_config,
             plot_assoc  = TRUE,
             plot_disso  = TRUE,
-            plot_fit    = reactives$kinetics_fit_done,
-            split_by_smax_id = input$split_replicates,
-            max_points_per_plot = input$max_points_per_plot
+            plot_fit    = reactives$kinetics_fit_done
         )
     }
 
@@ -231,14 +218,7 @@ output$residuals <- renderPlotly({
 
         fig <- plot_steady_state_residuals(
             pyKinetics$fittings,
-            plot_width = input$plot_width_fit,
-            plot_height= input$plot_height_fit,
-            plot_type= input$plot_type_fit,
-            font_size = input$plot_axis_size_fit,
-            show_grid_x = input$plot_show_grid_x_fit,
-            show_grid_y = input$plot_show_grid_y_fit,
-            marker_size = input$plot_marker_size_fit,
-            line_width  = input$plot_line_width_fit,
+            plot_config = reactives$plot_config,
             plot_fit    = reactives$ss_fit_done
         )
     }
@@ -254,18 +234,8 @@ output$tracesFitSolution <- renderPlotly({
 
     fig <- plot_interactions(
         pyKinetics$fittings,
-        plot_width = input$plot_width_fit,
-        plot_height= input$plot_height_fit,
-        plot_type= input$plot_type_fit,
-        font_size = input$plot_axis_size_fit,
-        show_grid_x = input$plot_show_grid_x_fit,
-        show_grid_y = input$plot_show_grid_y_fit,
-        marker_size = input$plot_marker_size_fit,
-        line_width  = input$plot_line_width_fit,
-        plot_fit    = reactives$kinetics_fit_done,
-        max_points_per_plot = input$max_points_per_plot,
-        smooth_curves_fit = input$smooth_curves_fit,
-        rolling_window = input$median_window_size
+        plot_config = reactives$plot_config,
+        plot_fit    = reactives$kinetics_fit_done
     )
 
     return(fig)
@@ -281,14 +251,7 @@ output$residualsSolution <- renderPlotly({
 
     fig <- plot_interactions_residuals(
         pyKinetics$fittings,
-        plot_width = input$plot_width_fit,
-        plot_height= input$plot_height_fit,
-        plot_type= input$plot_type_fit,
-        font_size = input$plot_axis_size_fit,
-        show_grid_x = input$plot_show_grid_x_fit,
-        show_grid_y = input$plot_show_grid_y_fit,
-        marker_size = input$plot_marker_size_fit,
-        max_points_per_plot = input$max_points_per_plot
+        plot_config = reactives$plot_config
     )
 
     return(fig)
@@ -319,13 +282,7 @@ output$kobs_plot <- renderPlotly({
         k_obs_non_dominant_per_pc_lst,
         protein_conc_lst,
         ligand_conc_per_pc_lst,
-        plot_width  = input$plot_width_fit,
-        plot_height = input$plot_height_fit,
-        plot_type   = input$plot_type_fit,
-        font_size   = input$plot_axis_size_fit,
-        show_grid_x = input$plot_show_grid_x_fit,
-        show_grid_y = input$plot_show_grid_y_fit,
-        marker_size = input$plot_marker_size_fit
+        plot_config = reactives$plot_config
     )
 
     return(fig)

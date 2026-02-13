@@ -27,23 +27,23 @@ shinyUI(dashboardPage(
 
     dashboardBody(theme_grey_light,
 
-          tags$head(
-            tags$style(HTML("
-              .modal-dialog {
-                position: absolute;
-                top: 40% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-              }
-            "))),
-
-          tags$head(
-            tags$style(HTML("
-              .modal-body {
-                max-height: 70vh;
-                overflow-y: auto;
-              }
-            "))),
+        tags$head(
+          tags$style(HTML("
+            /* place modal left edge at 1/3 of viewport width */
+            .modal-dialog {
+              position: fixed !important;
+              left: 13.3333vw !important; /* 1/3 of available width */
+              top: 20vh !important;        /* adjust vertical position as needed */
+              transform: none !important;  /* disable centering translate */
+              margin: 0 !important;
+              width: 400px !important;
+              max-width: calc(100vw - 40px) !important;
+            }
+            .modal-content {
+              border-radius: 12px !important;
+            }
+          "))
+        ),
 
         tabItems(
 
@@ -60,6 +60,22 @@ shinyUI(dashboardPage(
                         ),
 
                         column(8,
+
+                            tags$head(
+                                tags$style(HTML("
+                                    /* Custom left modal */
+                                    .modal-dialog {
+                                    position: fixed !important;
+                                    left: 80px;        /* margin from the left */
+                                    top: 80px;         /* margin from the top */
+                                    width: 300px;      /* wider modal */
+                                    margin: 0;         /* no default Bootstrap margin */
+                                    }
+                                    .modal-content {
+                                    border-radius: 12px;
+                                    }
+                                "))
+                            ),
 
                             #Custom CSS to increase plot height
                             tags$head(tags$style("

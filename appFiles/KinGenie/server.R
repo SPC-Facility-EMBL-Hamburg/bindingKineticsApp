@@ -23,6 +23,7 @@ function(input, output, session) {
 
     source(paste0(base_dir,"reactives/reactives_values.R"                 ), local = T)
     source(paste0(base_dir,"reactives/reactives.R"                        ), local = T)
+    source(paste0(base_dir,"reactives/plot_configure_reactives.R"         ), local = T)
     source(paste0(base_dir,"reactives/plot_reactives.R"                   ), local = T)
     source(paste0(base_dir,"reactives/table_reactives.R"                  ), local = T)
     source(paste0(base_dir,"reactives/analysis_reactives.R"               ), local = T)

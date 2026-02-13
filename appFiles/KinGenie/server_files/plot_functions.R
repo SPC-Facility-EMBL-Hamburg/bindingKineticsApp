@@ -1,14 +1,55 @@
-plot_ticks_length_cst <- 8
+get_axis_ticks <- function(min_val, max_val, n_ticks = 6) {
+
+    axis_step <- (max_val - min_val) / (n_ticks - 1)
+
+    tickpos <- seq(min_val, max_val, by = axis_step)
+
+    if (axis_step < 0.1) {
+
+        digits_after_comma <- 3
+
+    } else if (axis_step < 1) {
+
+        digits_after_comma <- 2
+
+    } else if (axis_step < 10) {
+
+        digits_after_comma <- 1
+
+    } else {
+
+        digits_after_comma <- 0
+
+    }
+
+    ticktext <- format(round(tickpos, digits_after_comma), nsmall = digits_after_comma)
+
+    # Remove trailing spaces
+    ticktext <- trimws(ticktext)
+
+    return(
+        list(
+            "tickpos" = tickpos,
+            "ticktext" = ticktext
+        )
+    )
+}
+
 
 get_colors_from_numeric_values <- function(values,minVal,maxVal,useLogScale=TRUE) {
 
-    viridis <- c("#440154","#471063","#481d6f","#472a7a",
-               "#414487","#3c4f8a","#375a8c",
-               "#32648e","#2a788e","#26828e",
-               "#228b8d","#1f958b","#22a884",
-               "#2cb17e","#3bbb75","#4ec36b",
-               "#7ad151","#95d840","#b0dd2f","#cae11f",
-               "#fde725")
+    viridis = c(
+         '#440154', '#450457', '#46085c', '#460b5e', '#471063', '#471365', '#481769', '#481b6d', '#481d6f', '#482173',
+         '#482475', '#482878', '#472c7a', '#472e7c', '#46327e', '#463480', '#453882', '#443a83', '#433e85', '#424186',
+         '#414487', '#3f4788', '#3e4989', '#3d4d8a', '#3c508b', '#3b528b', '#39558c', '#38588c', '#375b8d', '#365d8d',
+         '#34608d', '#33638d', '#32658e', '#31688e', '#306a8e', '#2e6d8e', '#2d708e', '#2c718e', '#2b748e', '#2a768e',
+         '#29798e', '#287c8e', '#277e8e', '#26818e', '#26828e', '#25858e', '#24878e', '#238a8d', '#228d8d', '#218f8d',
+         '#20928c', '#20938c', '#1f968b', '#1f998a', '#1e9b8a', '#1f9e89', '#1fa088', '#1fa287', '#20a486', '#22a785',
+         '#24aa83', '#25ac82', '#28ae80', '#2ab07f', '#2eb37c', '#32b67a', '#35b779', '#3aba76', '#3dbc74', '#42be71',
+         '#48c16e', '#4cc26c', '#52c569', '#56c667', '#5cc863', '#60ca60', '#67cc5c', '#6ece58', '#73d056', '#7ad151',
+         '#7fd34e', '#86d549', '#8ed645', '#93d741', '#9bd93c', '#a0da39', '#a8db34', '#addc30', '#b5de2b', '#bddf26',
+         '#c2df23', '#cae11f', '#d0e11c', '#d8e219', '#dfe318', '#e5e419', '#ece51b', '#f1e51d', '#f8e621', '#fde725'
+    )
 
     if (useLogScale) {
 
@@ -17,7 +58,7 @@ get_colors_from_numeric_values <- function(values,minVal,maxVal,useLogScale=TRUE
 
     }
 
-    seq <- seq(minVal,maxVal,length.out = 21)
+    seq <- seq(minVal,maxVal,length.out = length(viridis))
 
     if (useLogScale) {
         idx <- sapply(values,function(v) which.min(abs(log10(v) - seq)))
@@ -33,8 +74,8 @@ config_fig <- function(fig,nameForDownload,plot_type,plot_width,plot_height) {
         toImageButtonOptions = list(
         format = plot_type,
         filename = nameForDownload,
-        width = plot_width * 50,
-        height = plot_height * 50
+        width = plot_width,
+        height = plot_height
         ), displaylogo = FALSE,
         modeBarButtonsToRemove = list(
             'hoverClosestCartesian',
@@ -98,7 +139,9 @@ add_layout_to_subplot <- function(fig,xaxis,yaxis,leg,tot_cond,axis_size,
 plot_plate_info <- function(sample_row,sample_column,sample_type,
                             sample_id,sample_conc_labeled,
                             experiment_name,
-                            font_size = 18) {
+                            plot_config) {
+
+    font_size <- plot_config$axis_size
 
     sample_type_simple <- sapply(sample_type,sample_type_to_letter)
 
@@ -132,20 +175,41 @@ plot_plate_info <- function(sample_row,sample_column,sample_type,
 
 }
 
-plot_traces <- function(xs,ys,legends,colors,show,
-                        font_size = 18,
-                        show_grid_x = FALSE,
-                        show_grid_y = FALSE,
-                        marker_size = 1,
-                        line_width = 2,
-                        vertical_lines = NULL
-                        ) {
+plot_traces <- function(
+    xs,
+    ys,
+    legends,
+    colors,
+    show,
+    plot_config
+    ) {
+
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    line_width <- plot_config$line_width
+    max_points <- plot_config$max_points
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
+
+    x_axis_label <- plot_config$x_label
+    y_axis_label <- plot_config$y_label
+
+    x_nticks <- plot_config$n_xticks
+    y_nticks <- plot_config$n_yticks
 
     fig <- plot_ly()
 
     total_traces         <- sum(show)
 
-    max_points_per_trace <- floor(4000 / total_traces)
+    max_points_per_trace <- floor(max_points / total_traces)
+
+    min_x_all <- 1e10
+    max_x_all <- -1e10
+
+    min_y_all <- 1e10
+    max_y_all <- -1e10
 
     for (i in 1:length(xs)) {
 
@@ -157,6 +221,11 @@ plot_traces <- function(xs,ys,legends,colors,show,
         x <- subset_data(x,max_points = max_points_per_trace)
         y <- subset_data(y,max_points = max_points_per_trace)
 
+        # remove NA values
+        na_indices <- is.na(x) | is.na(y)
+        x <- x[!na_indices]
+        y <- y[!na_indices]
+
         fig <- fig %>%
             add_trace(x = x, y = y,
                       type = 'scatter', mode = 'lines+markers',
@@ -165,11 +234,25 @@ plot_traces <- function(xs,ys,legends,colors,show,
                       line = list(width = line_width)
             )
 
+        min_x_all <- min(min_x_all,min(x))
+        max_x_all <- max(max_x_all,max(x))
+
+        min_y_all <- min(min_y_all,min(y))
+        max_y_all <- max(max_y_all,max(y))
+
     }
+
+    x_ticks_info <- get_axis_ticks(min_x_all, max_x_all, n_ticks = x_nticks)
+    x_ticks_pos <- x_ticks_info$tickpos
+    x_ticks_text <- x_ticks_info$ticktext
+
+    y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+    y_ticks_pos <- y_ticks_info$tickpos
+    y_ticks_text <- y_ticks_info$ticktext
 
     fig <- fig %>% layout(
         xaxis = list(
-            title = 'Time (s)',
+            title = x_axis_label,
             tickfont = list(size = font_size),
             titlefont = list(size = font_size),
             tickformat = "digit",
@@ -177,19 +260,27 @@ plot_traces <- function(xs,ys,legends,colors,show,
             showline = TRUE,
             zeroline = FALSE,
             ticks = "outside",
-            tickwidth = 2,
-            ticklen = plot_ticks_length_cst
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = 'array',
+            tickvals = x_ticks_pos,
+            ticktext = x_ticks_text,
+            range = as.list(extendrange(c(min_x_all,max_x_all)),0.02)
         ),
         yaxis = list(
-            title = 'Signal (a.u.)',
+            title = y_axis_label,
             tickfont = list(size = font_size),
             titlefont = list(size = font_size),
             showgrid = show_grid_y,
             showline = TRUE,
             zeroline = FALSE,
             ticks = "outside",
-            tickwidth = 2,
-            ticklen = plot_ticks_length_cst
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = 'array',
+            tickvals = y_ticks_pos,
+            ticktext = y_ticks_text,
+            range = as.list(extendrange(c(min_y_all,max_y_all)),0.02)
         ),
         title = list(
             text = "Sensor traces",
@@ -203,16 +294,19 @@ plot_traces <- function(xs,ys,legends,colors,show,
 
 }
 
-plot_traces_all <- function(all_xs,all_ys,legends,colors,show,
-                            plot_width=12,
-                            plot_height=10,
-                            plot_type='png',
-                            font_size = 18,
-                            show_grid_x = FALSE,
-                            show_grid_y = FALSE,
-                            marker_size = 1,
-                            line_width = 2,
-                            vertical_lines = NULL) {
+plot_traces_all <- function(
+    all_xs,
+    all_ys,
+    legends,
+    colors,
+    show,
+    plot_config
+    ) {
+
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
 
     cnt <- 1
 
@@ -231,13 +325,14 @@ plot_traces_all <- function(all_xs,all_ys,legends,colors,show,
 
         cnt <- cnt + n
 
-        fig <- plot_traces(xs,ys,legends_tmp,colors_tmp,show_tmp,
-                            font_size = font_size,
-                            show_grid_x = show_grid_x,
-                            show_grid_y = show_grid_y,
-                            marker_size = marker_size,
-                            line_width = line_width,
-                            vertical_lines = vertical_lines)
+        fig <- plot_traces(
+            xs,
+            ys,
+            legends_tmp,
+            colors_tmp,
+            show_tmp,
+            plot_config = plot_config
+        )
 
         plot_list[[i]] <- fig
 
@@ -250,19 +345,34 @@ plot_traces_all <- function(all_xs,all_ys,legends,colors,show,
 
 }
 
-plot_steady_state <- function(pyKinetics_fittings,
-                              plot_width=12,
-                              plot_height=10,
-                              plot_type='png',
-                              font_size = 18,
-                              show_grid_x = FALSE,
-                              show_grid_y = FALSE,
-                              marker_size = 1,
-                              line_width = 2,
-                              plot_fit   = FALSE) {
+plot_steady_state <- function(
+    pyKinetics_fittings,
+    plot_config,
+    plot_fit   = FALSE) {
 
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    line_width <- plot_config$line_width
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
+
+    x_axis_label <- plot_config$x_label
+    y_axis_label <- plot_config$y_label
+
+    x_nticks <- plot_config$n_xticks
+    y_nticks <- plot_config$n_yticks
 
     fig_lst <- list()
+
+    min_x_all <- 1e10
+    max_x_all <- -1e10
+    min_y_all <- 1e10
+    max_y_all <- -1e10
 
     for (fit in pyKinetics_fittings) {
 
@@ -275,9 +385,18 @@ plot_steady_state <- function(pyKinetics_fittings,
         for (i in 1:length(fit$lig_conc_lst_per_id)) {
 
             x <- as.numeric(fit$lig_conc_lst_per_id[[i]])
-            y <- fit$signal_ss[[i]]
-            fig <- add_trace(fig,x = x,y = y,type = 'scatter',name=names[i],
-            marker = list(size = marker_size))
+            y <- unlist(fit$signal_ss[[i]])
+
+            min_x_all <- min(min_x_all,min(x))
+            max_x_all <- max(max_x_all,max(x))
+
+            min_y_all <- min(min_y_all,min(y))
+            max_y_all <- max(max_y_all,max(y))
+
+            fig <- add_trace(
+                fig,x = log10(x),y = y,type = 'scatter',name=names[i],
+                marker = list(size = marker_size)
+            )
 
             # plot the fitted signal as lines
             if (!is.null(yFit) && plot_fit) {
@@ -287,7 +406,7 @@ plot_steady_state <- function(pyKinetics_fittings,
                 df_fit <- df_fit[order(df_fit$x),]
 
                 fig <- add_trace(
-                    fig,data = df_fit,x = ~x,y = ~y,
+                    fig,data = df_fit,x = ~log10(x),y = ~y,
                     mode = 'lines',name=names[i],
                     line = list(color = 'black',width = line_width),
                     showlegend=FALSE
@@ -295,30 +414,49 @@ plot_steady_state <- function(pyKinetics_fittings,
 
             }
 
+            x_log_min <- log10(min_x_all/1.2)
+            x_log_max <- log10(max_x_all*1.2)
+
+            x_tickvals <- signif(seq(x_log_min,x_log_max,length.out = x_nticks),2)
+            x_ticktext <- paste0("10","<sup>",x_tickvals,"</sup>")
+
+            y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+            y_tickvals <- y_ticks_info$tickpos
+            y_ticktext <- y_ticks_info$ticktext
+
             fig <- fig %>% layout(
                 xaxis = list(
-                    title = 'Ligand concentration (μM)',
+                    title = '[Ligand] (μM)',
                     tickfont = list(size = font_size),
                     titlefont = list(size = font_size),
-                    exponentformat = 'power',
+                    exponentformat = 'B',
+                    type= '-',
                     showgrid = show_grid_x,
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst,
-                    type = 'log'
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = x_tickvals,
+                    ticktext = x_ticktext,
+                    range = as.list(extendrange(c(x_log_min,x_log_max)),0.02)
+
                 ),
                 yaxis = list(
-                    title = 'Signal (a.u.)',
+                    title = y_axis_label,
                     tickfont = list(size = font_size),
                     titlefont = list(size = font_size),
                     showgrid = show_grid_y,
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = y_tickvals,
+                    ticktext = y_ticktext,
+                    range = as.list(extendrange(c(min_y_all,max_y_all)),0.02)
                 ),
                 legend = list(font = list(size = font_size)),
                 margin = list(t = 40)
@@ -337,18 +475,30 @@ plot_steady_state <- function(pyKinetics_fittings,
 }
 
 plot_steady_state_residuals <- function(
-        pyKinetics_fittings,
-        plot_width=12,
-        plot_height=10,
-        plot_type='png',
-        font_size = 18,
-        show_grid_x = FALSE,
-        show_grid_y = FALSE,
-        marker_size = 1,
-        line_width = 2,
-        plot_fit   = FALSE) {
+    pyKinetics_fittings,
+    plot_config,
+    plot_fit   = FALSE) {
+
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    line_width <- plot_config$line_width
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
+
+    x_nticks <- plot_config$n_xticks
+    y_nticks <- plot_config$n_yticks
 
     fig_lst <- list()
+
+    min_x_all <- 1e10
+    max_x_all <- -1e10
+    min_y_all <- 1e10
+    max_y_all <- -1e10
 
     for (fit in pyKinetics_fittings) {
 
@@ -370,25 +520,45 @@ plot_steady_state_residuals <- function(
 
                 y_res <- y_fit - y
 
-                fig <- add_trace(fig,x = x,y = y_res,
+                min_x_all <- min(min_x_all,min(x))
+                max_x_all <- max(max_x_all,max(x))
+                min_y_all <- min(min_y_all,min(y_res))
+                max_y_all <- max(max_y_all,max(y_res))
+
+                fig <- add_trace(fig,x = log10(x),y = y_res,
                 type = 'scatter',marker = list(size = marker_size),
                 name = names[i],showlegend=TRUE)
 
             }
 
+            x_log_min <- log10(min_x_all/1.2)
+            x_log_max <- log10(max_x_all*1.2)
+
+            x_tickvals <- signif(seq(x_log_min,x_log_max,length.out = x_nticks),2)
+            x_ticktext <- paste0("10","<sup>",x_tickvals,"</sup>")
+
+            y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+            y_tickvals <- y_ticks_info$tickpos
+            y_ticktext <- y_ticks_info$ticktext
+
+
             fig <- fig %>% layout(
                 xaxis = list(
-                    title = 'Ligand concentration (μM)',
+                    title = '[Ligand] (μM)',
                     tickfont = list(size = font_size),
                     titlefont = list(size = font_size),
-                    exponentformat = 'power',
+                    exponentformat = 'B',
+                    type= '-',
                     showgrid = show_grid_x,
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst,
-                    type = 'log'
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = x_tickvals,
+                    ticktext = x_ticktext,
+                    range = as.list(extendrange(c(x_log_min,x_log_max)),0.02)
                 ),
                 yaxis = list(
                     title = 'Yfit - Yexp',
@@ -398,8 +568,12 @@ plot_steady_state_residuals <- function(
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = y_tickvals,
+                    ticktext = y_ticktext,
+                    range = as.list(extendrange(c(min_y_all,max_y_all)),0.02)
                 ),
                 legend = list(font = list(size = font_size)),
                 margin = list(t = 40)
@@ -418,22 +592,33 @@ plot_steady_state_residuals <- function(
 
 }
 
-plot_association_dissociation <- function(pyKinetics_fittings,
-                                          plot_width=12,
-                                          plot_height=10,
-                                          plot_type='png',
-                                          font_size = 18,
-                                          show_grid_x = FALSE,
-                                          show_grid_y = FALSE,
-                                          marker_size = 1,
-                                          line_width = 2,
-                                          plot_assoc = TRUE,
-                                          plot_disso = TRUE,
-                                          plot_fit   = FALSE,
-                                          split_by_smax_id = TRUE,
-                                          max_points_per_plot= 2000,
-                                          smooth_curves_fit= FALSE,
-                                          rolling_window=0.1) {
+plot_association_dissociation <- function(
+    pyKinetics_fittings,
+    plot_config,
+    plot_assoc = TRUE,
+    plot_disso = TRUE,
+    plot_fit   = FALSE) {
+
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    line_width <- plot_config$line_width
+    split_by_smax_id <- plot_config$split_by_smax
+    max_points_per_plot <- plot_config$max_points
+    smooth_curves_fit <- plot_config$smooth_curves
+    rolling_window <- plot_config$rolling_window_size
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
+
+    x_axis_label <- plot_config$x_label
+    y_axis_label <- plot_config$y_label
+
+    x_nticks <- plot_config$n_xticks
+    y_nticks <- plot_config$n_yticks
 
     fig_lst <- list()
 
@@ -443,6 +628,12 @@ plot_association_dissociation <- function(pyKinetics_fittings,
     max_lig <- max(all_lig_conc)
 
     need_color_bar <- min_lig != max_lig
+
+    min_x_all <- 1e10
+    max_x_all <- -1e10
+
+    min_y_all <- 1e10
+    max_y_all <- -1e10
 
     count <- 0
 
@@ -487,6 +678,11 @@ plot_association_dissociation <- function(pyKinetics_fittings,
                     x <- time_assoc[[fc_counter]]
                     y <- raw_curves_assoc[[fc_counter]]
 
+                    min_x_all <- min(min_x_all,min(x))
+                    max_x_all <- max(max_x_all,max(x))
+                    min_y_all <- min(min_y_all,min(y))
+                    max_y_all <- max(max_y_all,max(y))
+
                     # Apply median smoothing
                     if (smooth_curves_fit) {
                         y   <- median_filter(y,x,rolling_window)
@@ -527,6 +723,11 @@ plot_association_dissociation <- function(pyKinetics_fittings,
 
                     x <- time_disso[[fc_counter]]
                     y <- raw_curves_disso[[fc_counter]]
+
+                    min_x_all <- min(min_x_all,min(x))
+                    max_x_all <- max(max_x_all,max(x))
+                    min_y_all <- min(min_y_all,min(y))
+                    max_y_all <- max(max_y_all,max(y))
 
                     # Apply median smoothing
                     if (smooth_curves_fit) {
@@ -570,7 +771,7 @@ plot_association_dissociation <- function(pyKinetics_fittings,
 
             if (count == 1 && need_color_bar) {
 
-                df <- data.frame(x=0,y=0,values = log10(c(min_lig,max_lig)))
+                df <- data.frame(x=min_x_all,y=min_y_all,values = log10(c(min_lig,max_lig)))
 
                 fig <- add_trace(fig,data=df,x = ~x,y = ~y,type = 'scatter',
                                  mode = 'markers',color=~values,
@@ -587,28 +788,46 @@ plot_association_dissociation <- function(pyKinetics_fittings,
 
             }
 
+            x_ticks_info <- get_axis_ticks(min_x_all, max_x_all, n_ticks = x_nticks)
+            x_ticks_pos <- x_ticks_info$tickpos
+            x_ticks_text <- x_ticks_info$ticktext
+
+            y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+            y_ticks_pos <- y_ticks_info$tickpos
+            y_ticks_text <- y_ticks_info$ticktext
+
             fig <- fig %>% layout(
                 xaxis = list(
-                    title = 'Time (seconds)',
+                    title = x_axis_label,
                     tickfont = list(size = font_size),
                     titlefont = list(size = font_size),
                     showgrid = show_grid_x,
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = x_ticks_pos,
+                    ticktext = x_ticks_text,
+                    range = as.list(extendrange(c(min_x_all,max_x_all)),0.02)
+
                 ),
                 yaxis = list(
-                    title = 'Signal (a.u.)',
+                    title = y_axis_label,
                     tickfont = list(size = font_size),
                     titlefont = list(size = font_size),
                     showgrid = show_grid_y,
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = y_ticks_pos,
+                    ticktext = y_ticks_text,
+                    range = as.list(extendrange(c(min_y_all,max_y_all)),0.02)
+
                 ),
                 legend = list(font = list(size = font_size)),
                 margin = list(t = 40)
@@ -617,7 +836,7 @@ plot_association_dissociation <- function(pyKinetics_fittings,
             if (count == 1 && need_color_bar) {
 
                 fig <- fig %>% colorbar(
-                    title = list(text='Ligand \n concentration (μM)',font=list(size=font_size-1)),
+                    title = list(text='[Ligand] (μM)',font=list(size=font_size-1)),
                     tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
                     ticktext = ticktext,  # Use the same tick values as labels
                     tickfont = list(size = font_size-2),  # Font size of the ticks
@@ -647,22 +866,29 @@ plot_association_dissociation <- function(pyKinetics_fittings,
 
 # To plot the interaction traces of solution-based experiments
 plot_interactions <- function(
+    pyKinetics_fittings,
+    plot_config,
+    plot_fit   = FALSE) {
 
-            pyKinetics_fittings,
-            plot_width=12,
-            plot_height=10,
-            plot_type='png',
-            font_size = 18,
-            show_grid_x = FALSE,
-            show_grid_y = FALSE,
-            marker_size = 1,
-            line_width = 2,
-            plot_fit   = FALSE,
-            max_points_per_plot= 2000,
-            smooth_curves_fit= FALSE,
-            rolling_window=0.1
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    line_width <- plot_config$line_width
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
+    smooth_curves_fit <- plot_config$smooth_curves
+    rolling_window <- plot_config$rolling_window_size
+    max_points_per_plot <- plot_config$max_points
 
-            ) {
+    x_axis_label <- plot_config$x_label
+    y_axis_label <- plot_config$y_label
+
+    x_nticks <- plot_config$n_xticks
+    y_nticks <- plot_config$n_yticks
 
     fig_lst <- list()
 
@@ -678,6 +904,11 @@ plot_interactions <- function(
                 'triangle-down','triangle-left','triangle-right','pentagon')
 
     count <- 0
+
+    min_x_all <- 1e10
+    max_x_all <- -1e10
+    min_y_all <- 1e10
+    max_y_all <- -1e10
 
     for (fit in pyKinetics_fittings) {
 
@@ -714,6 +945,11 @@ plot_interactions <- function(
 
             x <- subset_data(x,max_points = max_points_per_trace)
             y <- subset_data(y,max_points = max_points_per_trace)
+
+            min_x_all <- min(min_x_all,min(x))
+            max_x_all <- max(max_x_all,max(x))
+            min_y_all <- min(min_y_all,min(y))
+            max_y_all <- max(max_y_all,max(y))
 
             fig <- fig %>%
                 add_trace(x = x, y = y,
@@ -774,28 +1010,45 @@ plot_interactions <- function(
 
         }
 
+        x_ticks_info <- get_axis_ticks(min_x_all, max_x_all, n_ticks = x_nticks)
+        x_ticks_pos <- x_ticks_info$tickpos
+        x_ticks_text <- x_ticks_info$ticktext
+
+        y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+        y_ticks_pos <- y_ticks_info$tickpos
+        y_ticks_text <- y_ticks_info$ticktext
+
         fig <- fig %>% layout(
             xaxis = list(
-            title = 'Time (seconds)',
+            title = x_axis_label,
             tickfont = list(size = font_size),
             titlefont = list(size = font_size),
             showgrid = show_grid_x,
             showline = TRUE,
             zeroline = FALSE,
             ticks = "outside",
-            tickwidth = 2,
-            ticklen = plot_ticks_length_cst
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = 'array',
+            tickvals = x_ticks_pos,
+            ticktext = x_ticks_text,
+            range = as.list(extendrange(c(min_x_all,max_x_all)),0.02)
+
         ),
         yaxis = list(
-            title = 'Signal (a.u.)',
+            title = y_axis_label,
             tickfont = list(size = font_size),
             titlefont = list(size = font_size),
             showgrid = show_grid_y,
             showline = TRUE,
             zeroline = FALSE,
             ticks = "outside",
-            tickwidth = 2,
-            ticklen = plot_ticks_length_cst
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = 'array',
+            tickvals = y_ticks_pos,
+            ticktext = y_ticks_text,
+            range = as.list(extendrange(c(min_y_all,max_y_all)),0.02)
         ),
         legend = list(font = list(size = font_size)),
         margin = list(t = 40)
@@ -804,7 +1057,7 @@ plot_interactions <- function(
         if (count == 1 && need_color_bar) {
 
             fig <- fig %>% colorbar(
-            title = list(text='Ligand \n concentration (μM)',font=list(size=font_size-1)),
+            title = list(text='[Ligand] (μM)',font=list(size=font_size-1)),
             tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
             ticktext = ticktext,  # Use the same tick values as labels
             tickfont = list(size = font_size-2),  # Font size of the ticks
@@ -825,16 +1078,25 @@ plot_interactions <- function(
 }
 
 plot_interactions_residuals <- function(
-            pyKinetics_fittings,
-            plot_width=12,
-            plot_height=10,
-            plot_type='png',
-            font_size = 18,
-            show_grid_x = FALSE,
-            show_grid_y = FALSE,
-            marker_size = 1,
-            max_points_per_plot= 2000
-            ) {
+    pyKinetics_fittings,
+    plot_config) {
+
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
+    max_points_per_plot <- plot_config$max_points
+
+    x_axis_label <- plot_config$x_label
+    y_axis_label <- plot_config$y_label
+
+    x_nticks <- plot_config$n_xticks
+    y_nticks <- plot_config$n_yticks
 
     fig_lst <- list()
 
@@ -848,6 +1110,11 @@ plot_interactions_residuals <- function(
                 'triangle-down','triangle-left','triangle-right','pentagon')
 
     count <- 0
+
+    min_x_all <- 1e10
+    max_x_all <- -1e10
+    min_y_all <- 1e10
+    max_y_all <- -1e10
 
     for (fit in pyKinetics_fittings) {
 
@@ -886,6 +1153,12 @@ plot_interactions_residuals <- function(
 
                 y_fit <- subset_data(y_fit,max_points = max_points_per_trace)
                 y_res <- y_fit - y
+
+                min_x_all <- min(min_x_all,min(x))
+                max_x_all <- max(max_x_all,max(x))
+
+                min_y_all <- min(min_y_all,min(y_res))
+                max_y_all <- max(max_y_all,max(y_res))
 
                 fig <- fig %>%
                     add_trace(x = x, y = y_res,
@@ -930,28 +1203,44 @@ plot_interactions_residuals <- function(
 
         }
 
+        x_ticks_info <- get_axis_ticks(min_x_all, max_x_all, n_ticks = x_nticks)
+        x_ticks_pos <- x_ticks_info$tickpos
+        x_ticks_text <- x_ticks_info$ticktext
+
+        y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+        y_ticks_pos <- y_ticks_info$tickpos
+        y_ticks_text <- y_ticks_info$ticktext
+
         fig <- fig %>% layout(
             xaxis = list(
-            title = 'Time (seconds)',
+            title = x_axis_label,
             tickfont = list(size = font_size),
             titlefont = list(size = font_size),
             showgrid = show_grid_x,
             showline = TRUE,
             zeroline = FALSE,
             ticks = "outside",
-            tickwidth = 2,
-            ticklen = plot_ticks_length_cst
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = 'array',
+            tickvals = x_ticks_pos,
+            ticktext = x_ticks_text,
+            range = as.list(extendrange(c(min_x_all,max_x_all)),0.02)
         ),
         yaxis = list(
-            title = 'Signal (a.u.)',
+            title = y_axis_label,
             tickfont = list(size = font_size),
             titlefont = list(size = font_size),
             showgrid = show_grid_y,
             showline = TRUE,
             zeroline = FALSE,
             ticks = "outside",
-            tickwidth = 2,
-            ticklen = plot_ticks_length_cst
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = 'array',
+            tickvals = y_ticks_pos,
+            ticktext = y_ticks_text,
+            range = as.list(extendrange(c(min_y_all,max_y_all)),0.02)
         ),
         legend = list(font = list(size = font_size)),
         margin = list(t = 40)
@@ -960,7 +1249,7 @@ plot_interactions_residuals <- function(
         if (count == 1) {
 
             fig <- fig %>% colorbar(
-            title = list(text='Ligand \n concentration (μM)',font=list(size=font_size-1)),
+            title = list(text='[Ligand] (μM)',font=list(size=font_size-1)),
             tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
             ticktext = ticktext,  # Use the same tick values as labels
             tickfont = list(size = font_size-2),  # Font size of the ticks
@@ -981,23 +1270,27 @@ plot_interactions_residuals <- function(
 }
 
 plot_association_dissociation_residuals <- function(
+    pyKinetics_fittings,
+    plot_config,
+    plot_assoc = TRUE,
+    plot_disso = TRUE,
+    plot_fit   = FALSE) {
 
-            pyKinetics_fittings,
-            plot_width=12,
-            plot_height=10,
-            plot_type='png',
-            font_size = 18,
-            show_grid_x = FALSE,
-            show_grid_y = FALSE,
-            marker_size = 1,
-            line_width = 2,
-            plot_assoc = TRUE,
-            plot_disso = TRUE,
-            plot_fit   = FALSE,
-            split_by_smax_id = TRUE,
-            max_points_per_plot= 2000
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    line_width <- plot_config$line_width
+    split_by_smax_id <- plot_config$split_by_smax
+    max_points_per_plot <- plot_config$max_points
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
 
-            ) {
+    x_nticks <- plot_config$n_xticks
+    y_nticks <- plot_config$n_yticks
 
     fig_lst <- list()
 
@@ -1007,6 +1300,11 @@ plot_association_dissociation_residuals <- function(
     max_lig <- max(all_lig_conc)
 
     count <- 0
+
+    min_x_all <- 1e10
+    max_x_all <- -1e10
+    min_y_all <- 1e10
+    max_y_all <- -1e10
 
     for (fit in pyKinetics_fittings) {
 
@@ -1054,6 +1352,11 @@ plot_association_dissociation_residuals <- function(
 
                         y_res <- y_fit - y_temp
 
+                        min_x_all <- min(min_x_all,min(x_temp))
+                        max_x_all <- max(max_x_all,max(x_temp))
+                        min_y_all <- min(min_y_all,min(y_res))
+                        max_y_all <- max(max_y_all,max(y_res))
+
                         fig <- add_trace(fig,x = x_temp,y = y_res,type = 'scatter',mode = 'markers',
                                         name=paste0(i,' ',l[j]),color=I(hex_color),
                                         showlegend=FALSE,marker = list(size = marker_size))
@@ -1071,6 +1374,11 @@ plot_association_dissociation_residuals <- function(
                         y_fit <- subset_data(fitted_curves_disso[[fc_counter]],max_points = max_points_per_trace)
 
                         y_res <- y_fit - y_temp
+
+                        min_x_all <- min(min_x_all,min(x_temp))
+                        max_x_all <- max(max_x_all,max(x_temp))
+                        min_y_all <- min(min_y_all,min(y_res))
+                        max_y_all <- max(max_y_all,max(y_res))
 
                         fig <- add_trace(fig,x = x_temp,y = y_res,type = 'scatter',mode = 'markers',
                                          name=paste0(i,' ',l[j]),color=I(hex_color),showlegend=FALSE,marker = list(size = marker_size))
@@ -1102,6 +1410,14 @@ plot_association_dissociation_residuals <- function(
 
             }
 
+            x_ticks_info <- get_axis_ticks(min_x_all, max_x_all, n_ticks = x_nticks)
+            x_ticks_pos <- x_ticks_info$tickpos
+            x_ticks_text <- x_ticks_info$ticktext
+
+            y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+            y_ticks_pos <- y_ticks_info$tickpos
+            y_ticks_text <- y_ticks_info$ticktext
+
             fig <- fig %>% layout(
                 xaxis = list(
                     title = 'Time (seconds)',
@@ -1111,8 +1427,12 @@ plot_association_dissociation_residuals <- function(
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = x_ticks_pos,
+                    ticktext = x_ticks_text,
+                    range = as.list(extendrange(c(min_x_all,max_x_all)),0.02)
                 ),
                 yaxis = list(
                     title = 'Yfit - Yexp',
@@ -1122,8 +1442,12 @@ plot_association_dissociation_residuals <- function(
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    tickwidth = tick_width,
+                    ticklen = tick_length,
+                    tickmode = 'array',
+                    tickvals = y_ticks_pos,
+                    ticktext = y_ticks_text,
+                    range = as.list(extendrange(c(min_y_all,max_y_all)),0.02)
                 ),
                 legend = list(font = list(size = font_size)),
                 margin = list(t = 40)
@@ -1132,7 +1456,7 @@ plot_association_dissociation_residuals <- function(
             if (count == 1) {
 
                 fig <- fig %>% colorbar(
-                    title = list(text='Ligand \n concentration (μM)',font=list(size=font_size-1)),
+                    title = list(text='[Ligand] (μM)',font=list(size=font_size-1)),
                     tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
                     ticktext = ticktext,  # Use the same tick values as labels
                     tickfont = list(size = font_size-2),  # Font size of the ticks
@@ -1159,20 +1483,21 @@ plot_association_dissociation_residuals <- function(
 
 }
 
-plot_simulation <- function(time_assoc_per_cycle,
-                            time_disso_per_cycle,
-                            signal_per_cycle_assoc,
-                            signal_per_cycle_disso,
-                            protein_concs,
-                            ligand_concs,
-                            plot_width=12,
-                            plot_height=10,
-                            plot_type='png',
-                            font_size = 18,
-                            show_grid_x = FALSE,
-                            show_grid_y = FALSE,
-                            marker_size = 1,
-                            is_single_cycle = FALSE) {
+plot_simulation <- function(
+    time_assoc_per_cycle,
+    time_disso_per_cycle,
+    signal_per_cycle_assoc,
+    signal_per_cycle_disso,
+    protein_concs,
+    ligand_concs,
+    plot_width=12,
+    plot_height=10,
+    plot_type='png',
+    font_size = 18,
+    show_grid_x = FALSE,
+    show_grid_y = FALSE,
+    marker_size = 1,
+    is_single_cycle = FALSE) {
 
     fig_lst <- list()
 
@@ -1265,7 +1590,7 @@ plot_simulation <- function(time_assoc_per_cycle,
                     zeroline = FALSE,
                     ticks = "outside",
                     tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    ticklen = 8
                     )
 
         yaxis = list(
@@ -1277,7 +1602,7 @@ plot_simulation <- function(time_assoc_per_cycle,
                     zeroline = FALSE,
                     ticks = "outside",
                     tickwidth = 2,
-                    ticklen = plot_ticks_length_cst,
+                    ticklen = 8,
                     range = c(0,max_signal*1.05)
                     )
 
@@ -1286,7 +1611,7 @@ plot_simulation <- function(time_assoc_per_cycle,
         if (i == 1) {
 
             fig <- fig %>% colorbar(
-                title = list(text='Ligand \n concentration (μM)',font=list(size=font_size-1)),
+                title = list(text='[Ligand] (μM)',font=list(size=font_size-1)),
                 tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
                 ticktext = ticktext,  # Use the same tick values as labels
                 tickfont = list(size = font_size-2),  # Font size of the ticks
@@ -1309,17 +1634,19 @@ plot_simulation <- function(time_assoc_per_cycle,
 # Plot the dominant relaxation rate versus total ligand concentration
 # k_obs_dominant_per_pc, k_obs_non_dominant_per_pc, and ligand_concs_per_pc are lists of vectors
 # Each vector corresponds to a different protein concentration
-plot_relaxation_rates <- function(k_obs_dominant_per_pc,
-                                  k_obs_non_dominant_per_pc,
-                                  protein_concs,
-                                  ligand_concs_per_pc,
-                                  plot_width=12,
-                                  plot_height=10,
-                                  plot_type='png',
-                                  font_size = 18,
-                                  show_grid_x = FALSE,
-                                  show_grid_y = FALSE,
-                                  marker_size = 1) {
+plot_relaxation_rates <- function(
+    k_obs_dominant_per_pc,
+    k_obs_non_dominant_per_pc,
+    protein_concs,
+    ligand_concs_per_pc,
+    plot_config) {
+
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
 
     fig <- plot_ly()
 
@@ -1362,8 +1689,8 @@ plot_relaxation_rates <- function(k_obs_dominant_per_pc,
             showline = TRUE,
             zeroline = FALSE,
             ticks = "outside",
-            tickwidth = 2,
-            ticklen = plot_ticks_length_cst
+            tickwidth = tick_width,
+            ticklen = tick_length
     )
 
     yaxis = list(
@@ -1374,13 +1701,11 @@ plot_relaxation_rates <- function(k_obs_dominant_per_pc,
                 showline = TRUE,
                 zeroline = FALSE,
                 ticks = "outside",
-                tickwidth = 2,
-                ticklen = plot_ticks_length_cst
+                tickwidth = tick_width,
+                ticklen = tick_length
     )
 
     fig <- add_layout_to_subplot(fig,xaxis,yaxis,"Dominant relaxation rates",1,font_size)
-
-    fig <- config_fig(fig,"Dominant_relaxation_rates",plot_type,plot_width,plot_height)
 
     return(fig)
 
@@ -1391,13 +1716,7 @@ plot_many_relaxation_rates <- function(
     k_obs_non_dominant_per_pc_lst,
     protein_concs_lst,
     ligand_concs_per_pc_lst,
-    plot_width=12,
-    plot_height=10,
-    plot_type='png',
-    font_size = 18,
-    show_grid_x = FALSE,
-    show_grid_y = FALSE,
-    marker_size = 1) {
+    plot_config){
 
     fig_lst <- list()
 
@@ -1414,17 +1733,16 @@ plot_many_relaxation_rates <- function(
                                      k_obs_non_dominant_per_pc,
                                      protein_concs,
                                      ligand_concs_per_pc,
-                                     plot_width=plot_width,
-                                     plot_height=plot_height,
-                                     plot_type=plot_type,
-                                     font_size=font_size,
-                                     show_grid_x=show_grid_x,
-                                     show_grid_y=show_grid_y,
-                                     marker_size=marker_size)
+                                     plot_config=plot_config)
 
         fig_lst[[length(fig_lst)+1]] <- fig
 
     }
+
+    font_size <- plot_config$axis_size
+    plot_type <- plot_config$type
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
 
     fig <- plot_list_to_fig('Dominant_relaxation_rates_plot',fig_lst,'Dominant relaxation rates',
                             font_size,plot_type,plot_width,plot_height,2,FALSE)
@@ -1439,16 +1757,21 @@ plot_many_relaxation_rates <- function(
 # The first column is the ligand concentration
 # The second column is the observed constant
 # The third column is the experiment name
-diagnostic_plot <- function(df,
-                            plot_width=12,
-                            plot_height=10,
-                            plot_type='png',
-                            font_size = 18,
-                            show_grid_x = FALSE,
-                            show_grid_y = FALSE,
-                            marker_size = 1,
-                            line_width = 2,
-                            add_fit = TRUE) {
+diagnostic_plot <- function(
+    df,
+    plot_config,
+    add_fit = TRUE) {
+
+    plot_width <- plot_config$width
+    plot_height <- plot_config$height
+    plot_type <- plot_config$type
+    font_size <- plot_config$axis_size
+    show_grid_x <- plot_config$show_grid_x
+    show_grid_y <- plot_config$show_grid_y
+    marker_size <- plot_config$marker_size
+    line_width <- plot_config$line_width
+    tick_length <- plot_config$tick_length
+    tick_width <- plot_config$tick_width
 
     fig_lst <- list()
     unq_exp <- unique(df[,3])
@@ -1494,8 +1817,8 @@ diagnostic_plot <- function(df,
                 showline = TRUE,
                 zeroline = FALSE,
                 ticks = "outside",
-                tickwidth = 2,
-                ticklen = plot_ticks_length_cst
+                tickwidth = tick_width,
+                ticklen = tick_length
         )
 
         y_axis_label <- 'k<sub>obs</sub> (s<sup>-1</sup>)'
@@ -1515,8 +1838,8 @@ diagnostic_plot <- function(df,
                     showline = TRUE,
                     zeroline = FALSE,
                     ticks = "outside",
-                    tickwidth = 2,
-                    ticklen = plot_ticks_length_cst
+                    tickwidth = tick_width,
+                    ticklen = tick_length
         )
 
         fig <- add_layout_to_subplot(fig,xaxis,yaxis,exp,1,font_size)

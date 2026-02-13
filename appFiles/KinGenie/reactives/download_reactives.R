@@ -25,49 +25,8 @@ output$download_curves <- downloadHandler(
 
         req(reactives$fit_dataset_loaded)
 
-        dfs <- list()
-
-        for (fit in pyKinetics$fittings) {
-
-            lig_conc <- fit$lig_conc_lst
-
-            for (i in 1:length(lig_conc)) {
-
-                l   <- as.numeric(lig_conc[[i]])
-
-                x1   <- fit$time_assoc_lst[[i]]
-                y1   <- fit$assoc_lst[[i]]
-
-                x2   <- fit$time_disso_lst[[i]]
-                y2   <- fit$disso_lst[[i]]
-
-                for (j in 1:ncol(y1)) {
-
-                    df1 <- data.frame(
-                        'Time' = x1[,j],
-                        'Signal' = y1[,j],
-                        'Analyte_concentration_micromolar_constant' = l[j],
-                        'Type' = 'Association',
-                        'ID'   = fit$names[i]
-                    )
-
-                    df2 <- data.frame(
-                        'Time' = x2[,j],
-                        'Signal' = y2[,j],
-                        'Analyte_concentration_micromolar_constant' = 0,
-                        'Type' = 'Dissociation',
-                        'ID'   = fit$names[i]
-                    )
-
-                    dfs[[length(dfs)+1]] <- df1
-                    dfs[[length(dfs)+1]] <- df2
-
-                }
-            }
-
-        }
-
-        df <- do.call(rbind,dfs)
+        py_df <- pyKinetics$create_export_df('raw')
+        df <- pandas_to_r(py_df)
 
         write.csv(df,file = file,row.names = FALSE)
 
@@ -85,71 +44,8 @@ output$download_fitted_curves <- downloadHandler(
         req(reactives$fit_dataset_loaded)
         req(reactives$kinetics_fit_done)
 
-        dfs <- list()
-
-        for (fit in pyKinetics$fittings) {
-
-            # Counter that iterates over the fits, which are stored as list of lists
-            fc_counter <- 1
-
-            lig_conc <- fit$lig_conc
-
-            fitted_curves_assoc         <- fit$signal_assoc_fit
-            fitted_curves_disso         <- fit$signal_disso_fit
-
-            we_have_fitted_assoc <- !is.null(fitted_curves_assoc)
-            we_have_fitted_disso <- !is.null(fitted_curves_disso)
-
-            # if we don't have fitted data, skip to next iteration
-            if (!we_have_fitted_assoc & !we_have_fitted_disso) next
-
-            for (i in 1:length(lig_conc)) {
-
-                l   <- as.numeric(lig_conc[[i]])
-
-                x1   <- fit$time_assoc[[i]]
-                x2   <- fit$time_disso[[i]]
-
-                n_traces <- ncol(x1)
-
-                for (j in 1:n_traces) {
-
-                    if (we_have_fitted_assoc) {
-
-                        df1 <- data.frame(
-                            'Time' = x1[,j],
-                            'Fitted_signal' = fitted_curves_assoc[[fc_counter]],
-                            'Analyte_concentration_micromolar_constant' = l[j],
-                            'Type' = 'Association',
-                            'ID'   = fit$names[i]
-                        )
-
-                        dfs[[length(dfs)+1]] <- df1
-
-                    }
-
-                    if (we_have_fitted_disso) {
-
-                        df2 <- data.frame(
-                            'Time' = x2[,j],
-                            'Fitted_signal' = fitted_curves_disso[[fc_counter]],
-                            'Analyte_concentration_micromolar_constant' = 0,
-                            'Type' = 'Dissociation',
-                            'ID'   = fit$names[i]
-                        )
-
-                        dfs[[length(dfs)+1]] <- df2
-
-                    }
-
-                    # increase the fc_counter, because we have fitted data
-                    fc_counter <- fc_counter + 1
-
-                }
-            }
-        }
-
-        df <- do.call(rbind,dfs)
+        py_df <- pyKinetics$create_export_df('fit')
+        df <- pandas_to_r(py_df)
 
         write.csv(df,file = file,row.names = FALSE)
 
