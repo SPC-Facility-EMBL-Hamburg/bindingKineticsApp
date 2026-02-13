@@ -24,6 +24,9 @@ reactives <- reactiveValues(
     k_obs_plot_shown          = FALSE,
     kinetics_table_shown_sol  = FALSE, # Show the kinetics table (solution-based)
 
+    selected_color = "#E41A1C",
+    selected_trace = NULL,
+
     plot_config = list(
 
         x_label = "Time (s)", # x-axis label

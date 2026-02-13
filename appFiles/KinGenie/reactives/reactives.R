@@ -417,16 +417,6 @@ observeEvent(input$triggerDeletion,{
 
 })
 
-observeEvent(input$legendInfo,{
-
-    req(reactives$traces_loaded)
-
-    ids <- as.character(hot_to_r(input$legendInfo)$Internal_ID)
-
-    updateSelectInput(session,"mol2changeColor",NULL,ids,input$mol2changeColor)
-
-})
-
 observeEvent(input$colorForLegend,{
 
     req(reactives$traces_loaded)
@@ -437,6 +427,9 @@ observeEvent(input$colorForLegend,{
     legend_df$Color[idx] <- input$colorForLegend
 
     output$legendInfo    <- render_RHandsontable(legend_df)
+
+    reactives$selected_color <- input$colorForLegend
+    reactives$selected_trace <- input$mol2changeColor
 
 })
 

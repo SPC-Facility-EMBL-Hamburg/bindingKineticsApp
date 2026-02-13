@@ -258,7 +258,12 @@ observeEvent(input$y_axis_label_input, {
 })
 
 # Appearance modal: marker size, font size, line width, max points
-observeEvent(list(input$configure_appearance,input$configure_appearance_fit), {
+observeEvent(list(input$configure_appearance), {
+
+    req(reactives$traces_loaded)
+
+    ids <- as.character(hot_to_r(input$legendInfo)$Internal_ID)
+
     showModal(modalDialog(
         h3("Configure appearance settings"),
 
@@ -298,7 +303,29 @@ observeEvent(list(input$configure_appearance,input$configure_appearance_fit), {
                         value = reactives$plot_config$axis_size, min = 8, max = 34, step = 1
                     )
                 )
-            )
+            ),
+
+            column(
+                12,
+                column(
+                    width = 6,
+                    p(HTML('<b>Set colour</b>'),
+                        selectInput(inputId="mol2changeColor",
+                          label=NULL,
+                          choices=ids,
+                          selected = reactives$selected_trace,
+                          selectize = FALSE
+                        )
+                    )
+                ),
+
+                column(
+                    width = 6,
+                    p(HTML('<p style="margin-bottom:0px;"><br></p>'),
+                        colourpicker::colourInput("colorForLegend", NULL, value = reactives$selected_color)
+                    )
+                )
+            ),
 
         ),
         easyClose = TRUE,
@@ -330,4 +357,5 @@ observeEvent(input$appearance_line_width, {
     val <- max(0.1, min(100, val))
     reactives$plot_config$line_width <- val
 })
+
 
