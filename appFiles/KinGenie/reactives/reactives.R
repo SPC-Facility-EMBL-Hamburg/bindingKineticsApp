@@ -721,7 +721,9 @@ observeEvent(input$triggerProcessing,{
             ")),
 
             rHandsontableOutput('tableSelection'),
-
+            
+            tags$h4(''),
+            sliderInput('nPointsCorrectDis','Number of points to use for correction:',min=1,max=20,value=1),
             checkboxInput('inPlaceCorrection','Perform in-place inter-step correction',TRUE),
             conditionalPanel(
                 condition = "input.inPlaceCorrection",
@@ -987,7 +989,12 @@ observeEvent(input$submitCorrectDis,{
 
         py_exp <- pyKinetics$experiments[[exp]]
 
-        py_exp$align_dissociation(samples,input$inPlaceCorrection,input$createNewSensorNames)
+        py_exp$align_dissociation(
+            samples,
+            input$inPlaceCorrection,
+            input$createNewSensorNames,
+            input$nPointsCorrectDis
+    )
 
     }
 

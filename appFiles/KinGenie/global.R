@@ -13,7 +13,7 @@ isMac <- Sys.info()['sysname'] == 'Darwin'
 
 if (isMac) {
   reticulate::use_python("/Users/oburastero/myenv/bin/python", required = TRUE)
-  base_dir <- paste0("/Users/",user,"/Desktop/arise/spc_shiny_servers/bindingKineticsApp/appFiles/",appName,"/")
+  base_dir <- paste0("/Users/",user,"/Desktop/arise/bindingKineticsApp/appFiles/",appName,"/")
   
 } else {
   reticulate::use_python(paste0("/home/",user,"/myenv/bin/python"), required = TRUE)

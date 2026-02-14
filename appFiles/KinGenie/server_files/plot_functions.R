@@ -1,3 +1,19 @@
+median_filter <- function(time, signal, window_seconds) {
+  
+  half_window <- window_seconds / 2
+  n <- length(signal)
+  filtered <- numeric(n)
+  
+  for (i in 1:n) {
+    idx <- which(time >= (time[i] - half_window) &
+                 time <= (time[i] + half_window))
+    
+    filtered[i] <- median(signal[idx])
+  }
+  
+  return(filtered)
+}
+
 get_axis_ticks <- function(min_val, max_val, n_ticks = 6) {
 
     axis_step <- (max_val - min_val) / (n_ticks - 1)
@@ -201,7 +217,7 @@ plot_traces <- function(
 
     fig <- plot_ly()
 
-    total_traces         <- sum(show)
+    total_traces <- sum(show)
 
     max_points_per_trace <- floor(max_points / total_traces)
 
@@ -685,7 +701,7 @@ plot_association_dissociation <- function(
 
                     # Apply median smoothing
                     if (smooth_curves_fit) {
-                        y   <- median_filter(y,x,rolling_window)
+                        y  <- median_filter(x,y,rolling_window)
                     }
 
                     x_temp <- subset_data(x,max_points = max_points_per_trace)
@@ -731,7 +747,7 @@ plot_association_dissociation <- function(
 
                     # Apply median smoothing
                     if (smooth_curves_fit) {
-                        y   <- median_filter(y,x,rolling_window)
+                        y  <- median_filter(x,y,rolling_window)
                     }
 
                     x_temp <- subset_data(x,max_points = max_points_per_trace)
@@ -940,7 +956,7 @@ plot_interactions <- function(
 
             # Apply median smoothing
             if (smooth_curves_fit) {
-                y   <- median_filter(y,x,rolling_window)
+                y  <- median_filter(x,y,rolling_window)
             }
 
             x <- subset_data(x,max_points = max_points_per_trace)

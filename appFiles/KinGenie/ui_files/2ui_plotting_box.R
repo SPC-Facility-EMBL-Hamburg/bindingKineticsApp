@@ -41,7 +41,7 @@ box(title = "3. Plotting", width = 8, solidHeader = T, status = "primary",
             width=3,
             p(HTML('<p style="margin-bottom:0px;"></p>'),
                actionButton(
-                  inputId = "configure_extra_fit",
+                  inputId = "configure_visualization",
                   label = "Visualization",
                     icon("wrench"),
                     style="color: #fff; background-color: #337ab7;border-color: #2e6da4"

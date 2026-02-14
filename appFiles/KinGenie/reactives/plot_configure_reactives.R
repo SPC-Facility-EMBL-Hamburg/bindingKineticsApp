@@ -114,37 +114,39 @@ observeEvent(list(input$configure_axis,input$configure_axis_fit), {
             column(
                 width = 12,
 
-                p(HTML("<b>Number of x-ticks</b>"),
+                p(HTML("<b>Number of ticks</b>"),
 
-                    sliderInput(
-                        inputId = "axis_n_xticks_input",
-                        label = NULL,
-                        value = reactives$plot_config$n_xticks,
-                        min = 3,
-                        max = 10,
-                        step = 1
+                    column(6,
+                    
+                        sliderInput(
+                            inputId = "axis_n_xticks_input",
+                            label = 'X-axis',
+                            value = reactives$plot_config$n_xticks,
+                            min = 3,
+                            max = 10,
+                            step = 1
+                        )
+
+                    ),
+
+                    column(6,
+                    
+                        sliderInput(
+                            inputId = "axis_n_yticks_input",
+                            label = 'Y-axis',
+                            value = reactives$plot_config$n_yticks,
+                            min = 3,
+                            max = 10,
+                            step = 1
+                        )
+
                     )
+
                 )
             ),
 
             column(
-                width = 12,
-
-                p(HTML("<b>Number of y-ticks</b>"),
-
-                    sliderInput(
-                        inputId = "axis_n_yticks_input",
-                        label = NULL,
-                        value = reactives$plot_config$n_yticks,
-                        min = 3,
-                        max = 10,
-                        step = 1
-                    )
-                )
-            ),
-
-            column(
-                width = 12,
+                width = 6,
 
                 p(HTML("<b>Tick length (px)</b>"),
 
@@ -160,7 +162,7 @@ observeEvent(list(input$configure_axis,input$configure_axis_fit), {
             ),
 
             column(
-                width = 12,
+                width = 6,
 
                 p(HTML("<b>Tick width (px)</b>"),
 
@@ -270,7 +272,7 @@ observeEvent(list(input$configure_appearance), {
         fluidRow(
 
             column(
-                width = 12,
+                width = 6,
 
                 p(HTML("<b>Marker size</b>"),
 
@@ -282,7 +284,7 @@ observeEvent(list(input$configure_appearance), {
             ),
 
             column(
-                width = 12,
+                width = 6,
 
                 p(HTML("<b>Line width</b>"),
 
@@ -358,4 +360,149 @@ observeEvent(input$appearance_line_width, {
     reactives$plot_config$line_width <- val
 })
 
+# Appearance modal: marker size, font size, line width, max points
+observeEvent(input$configure_appearance_fit, {
 
+    req(reactives$traces_loaded)
+
+    showModal(modalDialog(
+        h3("Configure appearance settings"),
+
+        fluidRow(
+
+            column(
+                width = 6,
+
+                p(HTML("<b>Marker size</b>"),
+
+                    sliderInput(
+                        'appearance_marker_size', NULL,
+                        value = reactives$plot_config$marker_size, min = 1, max = 20, step = 0.5
+                    )
+                )
+            ),
+
+            column(
+                width = 6,
+
+                p(HTML("<b>Line width</b>"),
+
+                    sliderInput(
+                        'appearance_line_width', NULL,
+                        value = reactives$plot_config$line_width, min = 0.5, max = 10, step = 0.5
+                    )
+                )
+            ),
+
+            column(
+                width = 12,
+
+                p(HTML("<b>Font size</b>"),
+
+                    sliderInput(
+                        'appearance_font_size', NULL,
+                        value = reactives$plot_config$axis_size, min = 8, max = 34, step = 1
+                    )
+                )
+            )
+
+        ),
+        easyClose = TRUE,
+        footer = tagList(
+            modalButton('Close')
+        )
+    ))
+}, ignoreInit = TRUE)
+
+# Visualization modal: required to set
+# max points, smooth curves toggle, rolling window size, and split by smax toggle
+observeEvent(input$configure_visualization, {
+
+    req(reactives$traces_loaded)
+
+    showModal(modalDialog(
+        h3("Configure visualization settings"),
+
+        fluidRow(
+
+            column(
+                width = 12,
+
+                p(HTML("<b>Max points per subplot</b>"),
+
+                    sliderInput(
+                        'visualization_max_points', NULL,
+                        value = reactives$plot_config$max_points, min = 500, max = 10000, step = 750
+                    )
+                )
+            ),
+
+            column(
+                width = 6,
+
+                p(HTML("<b>Smooth curves</b>"),
+
+                    checkboxInput(
+                        'visualization_smooth_curves', NULL,
+                        value = isTRUE(reactives$plot_config$smooth_curves)
+                    )
+                )
+            ),
+
+            conditionalPanel(
+                condition = "input.visualization_smooth_curves == true",
+
+                column(
+                    width = 6,
+
+                    p(HTML("<b>Rolling window size (s)</b>"),
+
+                        sliderInput(
+                            'visualization_rolling_window_size', NULL,
+                            value = reactives$plot_config$rolling_window_size, 
+                            min = 0.5, 
+                            max = 5, 
+                            step = 0.5
+                        )
+                    )
+                )
+            ),
+
+            column(
+                width = 6,
+
+                p(HTML("<b>Split by smax</b>"),
+
+                    checkboxInput(
+                        'visualization_split_by_smax', NULL,
+                        value = isTRUE(reactives$plot_config$split_by_smax)
+                    )
+                )
+            )
+
+        ),
+        easyClose = TRUE,
+        footer = tagList(
+            modalButton('Close')
+        )
+    ))
+}, ignoreInit = TRUE)
+
+# Observers to sync visualization inputs into reactives
+observeEvent(input$visualization_max_points, {
+    val <- as.integer(input$visualization_max_points)
+    if (is.na(val) || val < 1) return()
+    val <- min(10000, max(500, val))
+    reactives$plot_config$max_points <- val
+})
+
+observeEvent(input$visualization_smooth_curves, {
+    reactives$plot_config$smooth_curves <- isTRUE(input$visualization_smooth_curves)
+})
+
+observeEvent(input$visualization_rolling_window_size, {
+    val <- as.numeric(input$visualization_rolling_window_size)
+    if (is.na(val) || val <= 0) return()
+    val <- min(5, max(0.5, val))
+    reactives$plot_config$rolling_window_size <- val
+})

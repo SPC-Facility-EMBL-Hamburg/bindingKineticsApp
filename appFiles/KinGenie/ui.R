@@ -33,7 +33,7 @@ shinyUI(dashboardPage(
             .modal-dialog {
               position: fixed !important;
               left: 13.3333vw !important; /* 1/3 of available width */
-              top: 20vh !important;        /* adjust vertical position as needed */
+              top: 15vh !important;        /* adjust vertical position as needed */
               transform: none !important;  /* disable centering translate */
               margin: 0 !important;
               width: 400px !important;
