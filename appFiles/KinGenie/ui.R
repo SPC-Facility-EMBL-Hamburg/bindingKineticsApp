@@ -27,23 +27,28 @@ shinyUI(dashboardPage(
 
     dashboardBody(theme_grey_light,
 
-        tags$head(
-          tags$style(HTML("
-            /* place modal left edge at 1/3 of viewport width */
-            .modal-dialog {
-              position: fixed !important;
-              left: 13.3333vw !important; /* 1/3 of available width */
-              top: 15vh !important;        /* adjust vertical position as needed */
-              transform: none !important;  /* disable centering translate */
-              margin: 0 !important;
-              width: 400px !important;
-              max-width: calc(100vw - 40px) !important;
-            }
-            .modal-content {
-              border-radius: 12px !important;
-            }
-          "))
-        ),
+    tags$head(
+    tags$style(HTML("
+        /* place modal left edge at 1/3 of viewport width */
+        .modal-dialog {
+        position: fixed !important;
+        left: 13.3333vw !important;
+        top: 15vh !important;
+        transform: none !important;
+        margin: 0 !important;
+        width: 400px !important;
+        max-width: calc(100vw - 40px) !important;
+        }
+        .modal-content {
+        border-radius: 12px !important;
+        }
+        /* enable vertical scrolling inside the modal */
+        .modal-body {
+        max-height: calc(100vh - 200px) !important;
+        overflow-y: auto !important;
+        }
+    "))
+    ),
 
         tabItems(
 
