@@ -8,11 +8,7 @@ render_ligand_info_df <- function(){
 
             py_df <- pyKinetics$combined_ligand_conc_df
 
-            print(py_df)
-
             df <- pandas_to_r(py_df)
-
-            print(head(df))
 
             return(render_combined_ligand_conc_df(df))
 
