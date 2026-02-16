@@ -352,7 +352,7 @@ observeEvent(input$submitKineticsFitting, {
     removeModal()
 
     withBusyIndicatorServer("fitSurfaceBusyIndicator",{
-    
+
         reactives$kinetics_fit_done <- FALSE
 
         fittingModel  <- input$fittingModel

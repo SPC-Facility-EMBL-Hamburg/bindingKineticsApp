@@ -279,7 +279,7 @@ observeEvent(input$submitLoadExperiment,{
 
     Sys.sleep(0.6)
 
-    reactives$traces_loaded       <- traces_loaded
+    reactives$traces_loaded  <- traces_loaded
     render_ligand_info_df()
 
     if (!traces_loaded) {
