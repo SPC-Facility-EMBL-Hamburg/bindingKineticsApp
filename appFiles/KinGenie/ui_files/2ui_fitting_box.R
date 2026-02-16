@@ -46,6 +46,15 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
             border-color: #2e6da4"))
         ),
 
+        # Little hack to use the withBusyIndicatorUI function (loading spinner)
+        column(1,p(
+          HTML("<b><br></b>"),
+          withBusyIndicatorUI(
+            shinyjs::hidden(actionButton("fitSurfaceBusyIndicator","",class = "btn-primary")))
+        )),
+
+
+
         # Button to calculate the asymmetric error
         column(2, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
             actionButton(

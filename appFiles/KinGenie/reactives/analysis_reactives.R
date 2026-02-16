@@ -351,77 +351,81 @@ observeEvent(input$submitKineticsFitting, {
 
     removeModal()
 
-    reactives$kinetics_fit_done <- FALSE
+    withBusyIndicatorServer("fitSurfaceBusyIndicator",{
+    
+        reactives$kinetics_fit_done <- FALSE
 
-    fittingModel  <- input$fittingModel
-    fittingRegion <- input$fittingRegion
-    shared_smax   <- input$linkedRmax
+        fittingModel  <- input$fittingModel
+        fittingRegion <- input$fittingRegion
+        shared_smax   <- input$linkedRmax
 
-    result <- tryCatch(
-        {
+        result <- tryCatch(
+            {
 
-            pyKinetics$submit_kinetics_fitting(fittingModel,fittingRegion,shared_smax)
+                pyKinetics$submit_kinetics_fitting(fittingModel,fittingRegion,shared_smax)
 
-        }, error = function(e) {
-            if (inherits(e, "python.builtin.RuntimeError")) {
-                err <- py_last_error()
-                popUpWarning(
-                    paste0("⚠ Fitting error: ", err$value)
-                )
-                return('Error')
-            } else {
-                stop(e) # rethrow non-Python errors
+            }, error = function(e) {
+                if (inherits(e, "python.builtin.RuntimeError")) {
+                    err <- py_last_error()
+                    popUpWarning(
+                        paste0("⚠ Fitting error: ", err$value)
+                    )
+                    return('Error')
+                } else {
+                    stop(e) # rethrow non-Python errors
+                }
             }
-        }
-    )
-
-    if (!is.null(result)) return(NULL)
-
-    popUpSuccess("Fitting done.
-    The fitted parameters are shown in the 'Fitted params (Kinetics)' table.
-    For the fitting algorithm to work, we use boundaries.
-    Check them in the 'Fitted params (boundaries)' table. If a fitted parameter is too close to the
-    lower or upper boundary, it will be highlighted in red.")
-
-    append_record_to_logbook('Kinetics fitting done.',add_empty_line = TRUE)
-    append_record_to_logbook(paste0('Region:', fittingRegion),add_empty_line = FALSE)
-    append_record_to_logbook(paste0('Model:', fittingModel),add_empty_line = FALSE)
-
-    append_record_to_logbook(paste0('Linked Rmax:',input$linkedRmax))
-
-    reactives$kinetics_fit_done   <- TRUE
-    reactives$fit_dataset_loaded  <- TRUE
-
-    reactives$kinetics_table_shown <- TRUE
-    tab <- tabPanel("Fitted params (Kinetics)",tableOutput("fittingInfoKinetics"))
-
-    # Append the Tab with the kinetic fitted parameters
-    insertTab(
-      inputId='tabBoxFit',
-      tab=tab,
-      session = session,
-      target = "Assoc. and diss. traces",
-      position = "after"
-    )
-
-    c1 <- fittingModel == 'one_to_one'
-    c2 <- grepl('asso',fittingRegion)
-    #c3 <- !reactives$is_single_cycle
-
-    if (c1 & c2) {
-
-        tab <- tabPanel("Observed constants",plotlyOutput("diagnostic_plot"))
-        # Append the Tab with the observed constants
-        appendTab(
-          inputId  = 'tabBoxFit',
-          tab      = tab,
-          select   = FALSE,
-          menuName = NULL,
-          session  = session
         )
 
-        reactives$diagnostic_plots_done <- TRUE
-    }
+        if (!is.null(result)) return(NULL)
+
+        popUpSuccess("Fitting done.
+        The fitted parameters are shown in the 'Fitted params (Kinetics)' table.
+        For the fitting algorithm to work, we use boundaries.
+        Check them in the 'Fitted params (boundaries)' table. If a fitted parameter is too close to the
+        lower or upper boundary, it will be highlighted in red.")
+
+        append_record_to_logbook('Kinetics fitting done.',add_empty_line = TRUE)
+        append_record_to_logbook(paste0('Region:', fittingRegion),add_empty_line = FALSE)
+        append_record_to_logbook(paste0('Model:', fittingModel),add_empty_line = FALSE)
+
+        append_record_to_logbook(paste0('Linked Rmax:',input$linkedRmax))
+
+        reactives$kinetics_fit_done   <- TRUE
+        reactives$fit_dataset_loaded  <- TRUE
+
+        reactives$kinetics_table_shown <- TRUE
+        tab <- tabPanel("Fitted params (Kinetics)",tableOutput("fittingInfoKinetics"))
+
+        # Append the Tab with the kinetic fitted parameters
+        insertTab(
+          inputId='tabBoxFit',
+          tab=tab,
+          session = session,
+          target = "Assoc. and diss. traces",
+          position = "after"
+        )
+
+        c1 <- fittingModel == 'one_to_one'
+        c2 <- grepl('asso',fittingRegion)
+        #c3 <- !reactives$is_single_cycle
+
+        if (c1 & c2) {
+
+            tab <- tabPanel("Observed constants",plotlyOutput("diagnostic_plot"))
+            # Append the Tab with the observed constants
+            appendTab(
+              inputId  = 'tabBoxFit',
+              tab      = tab,
+              select   = FALSE,
+              menuName = NULL,
+              session  = session
+            )
+
+            reactives$diagnostic_plots_done <- TRUE
+        }
+
+    })
 
 })
 
