@@ -18,6 +18,20 @@ box(title = "3. Binding parameters", width = 12, solidHeader = T, status = "prim
 
     ),
 
+    conditionalPanel("input.model_selected_sim == 'ligand_has_two_sites'",
+
+        fluidRow(
+
+            column(2, p(HTML("<b>k<sub>on</sub> [1/(μM*s)]</b>"),numericInput('kon_sim_ligand_two_sites',NULL, 0.5,min = 0, max = 1e8))),
+            column(2, p(HTML("<b>k<sub>off</sub> [1/s]</b>"),numericInput('koff_sim_ligand_two_sites',NULL, 0.01,min = 0, max = 5000))),
+
+            # Cooperativity factor for the second binding event, where f > 1 indicates positive cooperativity and f < 1 indicates negative cooperativity
+            column(2, p(HTML("<b>Cooperativity factor</b>"),numericInput('coop_sim_ligand_two_sites',NULL, 1, min = 1e-8, max = 1e8)))
+
+        )
+
+    ),
+
     conditionalPanel("input.model_selected_sim == 'heterogeneous_analyte'",
 
         fluidRow(

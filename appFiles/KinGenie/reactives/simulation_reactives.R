@@ -16,7 +16,8 @@ observeEvent(input$model_type_sim, {
             "1:1 (mass transport limitation)"  = "one_site_mtl",
             "1:1 (induced fit)"                = "one_site_induced_fit",
             "1:1 (conformational selection)"   = "one_site_conformational_selection",
-            "Heterogeneous analyte"            = "heterogeneous_analyte"
+            "Heterogeneous analyte"            = "heterogeneous_analyte",
+            "2:1 (ligand has two binding sites)" = "ligand_has_two_sites"
 
         ))
 
@@ -95,6 +96,14 @@ observeEvent(input$btn_cal_simulation, {
 
     }
 
+    if (model_selected_sim == "ligand_has_two_sites") {
+
+        k_on  <- input$kon_sim_ligand_two_sites
+        k_off <- input$koff_sim_ligand_two_sites
+        coop_factor  <- input$coop_sim_ligand_two_sites
+
+    }
+
     # 2. Obtain the (dis)association rates, and the conformational change rates
     if (model_selected_sim %in% c('one_site_induced_fit','one_site_conformational_selection')) {
 
@@ -150,7 +159,8 @@ observeEvent(input$btn_cal_simulation, {
         multi_state_models <- c(
             'one_site_induced_fit',
             'one_site_conformational_selection',
-            'heterogeneous_analyte')
+            'heterogeneous_analyte',
+            'ligand_has_two_sites')
 
         # 3. Obtain the association and dissociation times
         association_time  <- seq(0,input$association_time,input$time_step)
@@ -188,9 +198,14 @@ observeEvent(input$btn_cal_simulation, {
         # Obtain the smax
         if (model_selected_sim == 'heterogeneous_analyte') {
 
-            smax1_all <- smax1 / (input$prot_dil_factor_sim ^ (0:floor(input$numb_dil_sim_prot)))
-            smax2_all <- smax1 / (input$prot_dil_factor_sim ^ (0:floor(input$numb_dil_sim_prot)))
+            smax_all <- input$total_smax_sim / (input$prot_dil_factor_sim ^ (0:floor(input$numb_dil_sim_prot)))
 
+        } else if (model_selected_sim == 'ligand_has_two_sites') {
+
+            pl_rmax_all      <- input$pl_rmax_sim_two_sites / (input$prot_dil_factor_sim ^ (0:floor(input$numb_dil_sim_prot)))
+            pl2_rmax_all     <- input$pl2_rmax_sim_two_sites / (input$prot_dil_factor_sim ^ (0:floor(input$numb_dil_sim_prot)))
+
+            # Just to use the for-loop later
             smax_all <- input$total_smax_sim / (input$prot_dil_factor_sim ^ (0:floor(input$numb_dil_sim_prot)))
 
         } else {
@@ -215,7 +230,10 @@ observeEvent(input$btn_cal_simulation, {
 
         }
 
+        smax_counter <- 0
         for (smax in smax_all) {
+
+            smax_counter <- smax_counter + 1
 
             # Create the signal sublist. One element per ligand concentration
             signal_a <- list()
@@ -286,6 +304,27 @@ observeEvent(input$btn_cal_simulation, {
 
                 }
 
+                if (model_selected_sim == 'ligand_has_two_sites') {
+
+                    signal <- pykingenie$solve_two_site_cooperative_association(
+                        np_association_time, 
+                        lc, 
+                        k_on, 
+                        k_off, 
+                        coop_factor,
+                        Rmax_PL=pl_rmax_all[smax_counter], 
+                        Rmax_LPL=pl2_rmax_all[smax_counter], 
+                        fPL_0=0, 
+                        fLPL_0=0
+                    )
+
+                    signal_df <- as.data.frame(signal)
+
+                    colnames(signal_df) <- c('signal','PL','PL2')
+
+                    signal    <- signal_df$signal
+
+                }
 
                 signal_a[[length(signal_a)+1]] <- signal
 
@@ -323,6 +362,38 @@ observeEvent(input$btn_cal_simulation, {
 
                 }
 
+                if (model_selected_sim == 'ligand_has_two_sites') {
+
+                    # Signal PL and LPL at the end of the association phase
+                    signal_pl  <- tail(signal_df$PL,1)
+                    signal_lpl <- tail(signal_df$PL2,1)
+
+                    rmax_pl <- pl_rmax_all[smax_counter]
+                    rmax_lpl <- pl2_rmax_all[smax_counter]
+
+                    fraction_pl <- signal_pl / rmax_pl
+                    fraction_lpl <- signal_lpl / rmax_lpl
+
+                    signal <- pykingenie$solve_two_site_cooperative_dissociation(
+                        np_dissociation_time, 
+                        k_off, 
+                        coop_factor, 
+                        Rmax_PL=rmax_pl, 
+                        Rmax_LPL=rmax_lpl, 
+                        fPL_0=fraction_pl, 
+                        fLPL_0=fraction_lpl
+                    )
+
+                    signal_df <- as.data.frame(signal)
+
+                    colnames(signal_df) <- c('signal','PL','PL2')
+
+                    signal    <- signal_df$signal
+
+                    signal_d_adv[[length(signal_d_adv)+1]] <- tail(signal_df[,c('PL','PL2')],1)
+
+                }
+
                 if (model_selected_sim == 'one_site_induced_fit') {
 
                     sP2L <- tail(signal_df$sP2L,1)
@@ -350,7 +421,6 @@ observeEvent(input$btn_cal_simulation, {
 
                     signal_d_adv[[length(signal_d_adv)+1]] <- tail(signal_df,1)
                 }
-
 
                 signal_d[[length(signal_d)+1]] <- signal
 
@@ -466,9 +536,11 @@ observeEvent(input$btn_cal_simulation, {
 
                             np_signal_start <- np_array(last_col)
 
-                            signal_matrix <- pykingenie$solve_ode_mixture_analyte_association(np_association_time,
-                            np_signal_start,lc,np_pop_fractions,np_max_signal,
-                            np_k_offs,np_Kds)
+                            signal_matrix <- pykingenie$solve_ode_mixture_analyte_association(
+                                np_association_time,
+                                np_signal_start,lc,np_pop_fractions,np_max_signal,
+                                np_k_offs,np_Kds
+                                )
 
                             signal_matrix <- as.matrix(signal_matrix)
 
@@ -516,6 +588,39 @@ observeEvent(input$btn_cal_simulation, {
 
                             signal_df <- as.data.frame(signal_matrix)
                             colnames(signal_df) <- c('signal','sP1','sP2')
+
+                            signal    <- signal_df$signal
+
+                        }
+
+                        if (model_selected_sim == 'ligand_has_two_sites') {
+
+                            last_row  <- disso_signal_adv[[lc_counter]]
+
+                            signal_pl  <- last_row$PL[1]
+                            signal_lpl <- last_row$PL2[1]
+
+                            rmax_pl <- pl_rmax_all[smax_counter]
+                            rmax_lpl <- pl2_rmax_all[smax_counter]
+
+                            fraction_pl <- signal_pl / rmax_pl
+                            fraction_lpl <- signal_lpl / rmax_lpl
+
+                            signal <- pykingenie$solve_two_site_cooperative_association(
+                                np_association_time, 
+                                lc, 
+                                k_on, 
+                                k_off, 
+                                coop_factor,
+                                Rmax_PL=rmax_pl, 
+                                Rmax_LPL=rmax_lpl, 
+                                fPL_0=fraction_pl, 
+                                fLPL_0=fraction_lpl
+                            )
+
+                            signal_df <- as.data.frame(signal)
+
+                            colnames(signal_df) <- c('signal','PL','PL2')
 
                             signal    <- signal_df$signal
 
@@ -581,11 +686,35 @@ observeEvent(input$btn_cal_simulation, {
 
                         }
 
+                        if (model_selected_sim == 'ligand_has_two_sites') {
+
+                            fraction_pl <- tail(signal_df$PL,1) / rmax_pl
+                            fraction_lpl <- tail(signal_df$PL2,1) / rmax_lpl
+
+                            signal <- pykingenie$solve_two_site_cooperative_dissociation(
+                                np_dissociation_time, 
+                                k_off, 
+                                coop_factor, 
+                                Rmax_PL=rmax_pl, 
+                                Rmax_LPL=rmax_lpl, 
+                                fPL_0=fraction_pl, 
+                                fLPL_0=fraction_lpl
+                            )
+
+                            signal_df <- as.data.frame(signal)
+
+                            colnames(signal_df) <- c('signal','PL','PL2')
+
+                            signal    <- signal_df$signal
+
+                        }
+
                         signal_d[[length(signal_d)+1]] <- signal
 
                         if (model_selected_sim %in% c(
                             'one_site_induced_fit',
-                            'one_site_conformational_selection')) {
+                            'one_site_conformational_selection',
+                            'ligand_has_two_sites')) {
 
                             signal_d_adv[[length(signal_d_adv)+1]] <- tail(signal_df,1)
 

@@ -250,6 +250,8 @@ print_model_message <- function(model_type_sim,model_selected_sim) {
 
     }
 
+
+
     if (model_selected_sim == 'one_site_mtl') {
 
         popUpInfo(
@@ -327,6 +329,31 @@ print_model_message <- function(model_type_sim,model_selected_sim) {
         )
     }
 
+    if (model_selected_sim == 'ligand_has_two_sites') {
+
+        popUpInfo(
+            paste0('<p style="line-height: 2;">
+            The simulation will be performed using ',model_typ_text,'<br>
+            The chemical equations are
+            P + L ⇄ PL (first binding step) and PL + L ⇄ PL<sub>2</sub> (second binding step). <br>
+            The chemical reactions are: <br>
+            <span style="display: inline-block; text-align: center;">
+            2*k<sub>on</sub><br>
+            P + L → PL (first binding step) <br>
+            2*k<sub>off</sub><br>
+            PL → P + L (first binding step) <br>
+            sqrt(sigma) * k<sub>on</sub><br>
+            PL → PL<sub>2</sub> (second binding step) <br>
+            k<sub>off</sub> / sqrt(sigma)<br>
+            PL<sub>2</sub> → PL (second binding step) <br>
+            </span> <br>
+            ',extra_txt,',
+            ',extra_txt2,'
+            Please wait until the simulation is completed.
+            </p>'),
+            size = 'l'
+        )
+    }
 
     return(NULL)
 

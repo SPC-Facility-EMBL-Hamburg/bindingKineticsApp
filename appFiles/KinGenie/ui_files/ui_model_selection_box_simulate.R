@@ -6,7 +6,8 @@ box(title = "1. Model", width = 3, solidHeader = T, status = "primary",
             span(shiny::icon("info-circle"), id = "info_uu_sim_2-0"),
             selectInput("model_type_sim", NULL,
             c( "Surface binding"  = "surface",
-                "In-solution"     = "solution")),
+                "In-solution"     = "solution"),
+                selectize = FALSE), # Set selectize to FALSE to avoid text overflowing outside the box
             tippy::tippy_this(elementId = "info_uu_sim_2-0",
             tooltip = "Choose if the target protein is bound to a surface (e.g., BLI) or in solution (e.g., NMR).
             In the case of surface binding, the ligand concentration remains constant.

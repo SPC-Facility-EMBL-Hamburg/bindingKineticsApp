@@ -14,7 +14,6 @@ box(title = "2. Experimental parameters", width = 9, solidHeader = T, status = "
             numericInput('init_lig_sim',NULL, 0.1,min = 0, max = 1e6)))
         ),
 
-
         column(4, p(HTML("<b># Dilutions </b>"),
             numericInput('numb_dil_sim',NULL, 7,min = 0, max = 1e6))),
 
@@ -27,9 +26,24 @@ box(title = "2. Experimental parameters", width = 9, solidHeader = T, status = "
 
         conditionalPanel(
             condition = "input.model_type_sim == 'surface' &&
-            input.model_selected_sim != 'heterogeneous_analyte'",
+            input.model_selected_sim != 'heterogeneous_analyte' &&
+            input.model_selected_sim != 'ligand_has_two_sites'",
             column(4, p(HTML("<b>Rmax (A.U.)</b>"),
-            numericInput('protein_smax_sim',NULL, 5,min = 0, max = 1e6))),
+            numericInput('protein_smax_sim',NULL, 2.5,min = 0, max = 1e6))),
+        ),
+
+        conditionalPanel(
+            condition = "input.model_type_sim == 'surface' &&
+            input.model_selected_sim == 'ligand_has_two_sites'",
+            column(4, p(HTML("<b>PL Rmax (A.U.)</b>"),
+            numericInput('pl_rmax_sim_two_sites',NULL, 3.5,min = 0, max = 1e6))),
+        ),
+
+        conditionalPanel(
+            condition = "input.model_type_sim == 'surface' &&
+            input.model_selected_sim == 'ligand_has_two_sites'",
+            column(4, p(HTML("<b>PL<sub>2</sub> Rmax (A.U.)</b>"),
+            numericInput('pl2_rmax_sim_two_sites',NULL, 5,min = 0, max = 1e6))),
         ),
 
         conditionalPanel(
