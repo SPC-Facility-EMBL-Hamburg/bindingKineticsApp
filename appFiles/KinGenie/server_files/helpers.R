@@ -343,7 +343,7 @@ print_model_message <- function(model_type_sim,model_selected_sim) {
             PL → P + L (first binding step) <br>
             sqrt(sigma) * k<sub>on</sub><br>
             PL → PL<sub>2</sub> (second binding step) <br>
-            2*k<sub>off</sub> / sqrt(sigma)<br>
+            k<sub>off</sub> / sqrt(sigma)<br>
             PL<sub>2</sub> → PL (second binding step) <br>
             </span> <br>
             ',extra_txt,',
