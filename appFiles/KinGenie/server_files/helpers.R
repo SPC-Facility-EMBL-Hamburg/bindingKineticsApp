@@ -251,7 +251,6 @@ print_model_message <- function(model_type_sim,model_selected_sim) {
     }
 
 
-
     if (model_selected_sim == 'one_site_mtl') {
 
         popUpInfo(
@@ -340,11 +339,11 @@ print_model_message <- function(model_type_sim,model_selected_sim) {
             <span style="display: inline-block; text-align: center;">
             2*k<sub>on</sub><br>
             P + L → PL (first binding step) <br>
-            2*k<sub>off</sub><br>
+            k<sub>off</sub><br>
             PL → P + L (first binding step) <br>
             sqrt(sigma) * k<sub>on</sub><br>
             PL → PL<sub>2</sub> (second binding step) <br>
-            k<sub>off</sub> / sqrt(sigma)<br>
+            2*k<sub>off</sub> / sqrt(sigma)<br>
             PL<sub>2</sub> → PL (second binding step) <br>
             </span> <br>
             ',extra_txt,',
