@@ -8,7 +8,7 @@ KinGenie is an R shiny application to analyse binding kinetics data. The workflo
 
 1) Data Importing: Upload CSV files or raw data from Octet or Gator instruments. 
 
-2) Preprocessing: For surface-based binding, the association phase and dissociation phase can be aligned. For solution-based binding a time cut-off can be used. For both types of experiments, the reference traces can be subtracted.
+2) Preprocessing: For surface-based binding, the association phase and dissociation phase can be aligned. For solution-based binding, a time cut-off can be used. For both types of experiments, the reference traces can be subtracted.
 
 3) Analysis: Apply a binding model to extract kinetic parameters such as $k_{\text{on}}$ and $k_{\text{off}}$.
 
