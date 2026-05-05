@@ -511,10 +511,176 @@ $$
 \end{aligned}
 $$
 
-</div>
+<p class="vf-intro__text">
+<b>Note:</b> This model is implemented for simulation purposes, but not for fitting experimental data.
+</p>
 
 </div>
 
+<br>
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-heterogeneousAnalyte"
+                                      onclick="myFunction('heterogeneousAnalyte')"
+ style="padding-left: 20px;">
+  Heterogeneous analyte <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="heterogeneousAnalyte" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equations of the system are:
+</p>
+
+$$
+\large{
+A + B_1 \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{on}_1}}_{k_{\text{off}_1}}} AB_1
+}
+$$
+
+$$
+\large{A + B_2 \mathrel{\mathop{\rightleftharpoons}\limits^{k_{\text{on}_2}}_{k_{\text{off}_2}}} AB_2}
+$$  
+
+<p class="vf-intro__text">
+    where \( A \) is the attached molecule, \( B_1 \) and \( B_2 \) are two different species flowing, and \( AB_1 \) and \( AB_2 \) are the corresponding complexes.
+    The signal  \( S_i \) of each complex follows the differential equation:
+</p>
+
+$$
+\large{
+    \frac{dS_i}{dt} = k_{on,i}  F_i  C_{TOT}  S_{max,i}  \left(1 - \sum_{j=1}^{2} \frac{S_j}{S_{max,j}}\right) - k_{off,i} * S_{i}
+}
+$$
+
+<p class="vf-intro__text">
+    where \( C_{TOT} \) is the total concentration of the analytes, \( F_{i} \) is the fraction of analyte \( i \) in the mixture, and \( S_{\text{max},i} \) is the maximum signal for analyte \( i \).
+    The total signal \( S \) is the sum of the signals from each complex:
+</p>
+
+$$
+\large{
+    S = S_1 + S_2
+}
+$$
+
+<p class="vf-intro__text">
+<b>Note:</b> This model is implemented for simulation purposes, but not for fitting experimental data.
+</p>
+
+<p class="vf-intro__text">
+    <strong>References:</strong>
+    <ul>
+    <li>
+        Gaudreault, Jimmy, <i>et al.</i> "Multi-temperature experiments to ease analysis of heterogeneous binder solutions by surface plasmon resonance biosensing." Scientific Reports 12.1 (2022): 14401.
+    </li>
+    <!-- Additional list items can go here -->
+    </ul>
+</p>
+
+</div>
+
+<br>
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-ligandWithTwoBindingSites"
+                                      onclick="myFunction('ligandWithTwoBindingSites')"
+ style="padding-left: 20px;">
+  Immobilized ligand with two binding sites (2:1) <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="ligandWithTwoBindingSites" style="display:none">
+
+<p class="vf-intro__text">
+    The chemical equations of the system are:
+</p>
+
+$$
+\large{
+A + B \;\underset{k_{\text{off}}}{\overset{2k_{\text{on}}}{\rightleftharpoons}}\; AB}
+$$
+
+
+$$
+AB + B \;\underset{\frac{k_{\text{off}}}{\sqrt{\sigma}}}{\overset{\sqrt{\sigma}\,k_{\text{on}}}{\rightleftharpoons}}\; AB_2$$
+
+
+<p class="vf-intro__text">
+    where \( A \) is the attached molecule with two binding sites, \( B \) is the molecule flowing, \( AB \) is the complex with one bound analyte, and \( AB_2 \) is the complex with two bound analytes.
+    The parameter \( \sigma \) is the cooperativity factor, which describes how the binding of the first analyte affects the binding of the second analyte.
+     If \( \sigma > 1 \), there is positive cooperativity, if  \( \sigma < 1 \), there is negative cooperativity, and if \( \sigma = 1 \), there is no cooperativity.
+</p>
+
+<p class="vf-intro__text">
+Regarding the fraction of \( AB \) (\( f_{AB} \)) and the fraction of \( AB_2 \) (\( f_{AB_2} \)), the set of non-redundant differential equations is: 
+</p>
+
+$$
+\large{
+\frac{df_{AB}}{dt}
+=
+2k_{\text{on}}\,[B]
+-
+\left(2k_{\text{on}}\,[B] + k_{\text{off}} + \sqrt{\sigma}\,k_{\text{on}}\,[B]\right) f_{AB}
++
+\left(\frac{2k_{\text{off}}}{\sqrt{\sigma}} - 2k_{\text{on}}\,[B]\right) f_{AB_2}
+}
+$$
+
+$$
+\large{
+    \frac{df_{AB_2}}{dt}
+=
+\sqrt{\sigma}\,k_{\text{on}}\,[B]\, f_{AB}
+-
+\frac{2k_{\text{off}}}{\sqrt{\sigma}}\, f_{AB_2}
+}
+$$
+
+<p class="vf-intro__text">
+    The total signal \( S \) is given by the sum of the signal produced by  \( AB \) and \( AB_2 \):
+</p>
+
+$$
+\large{
+S = S_{max,AB} f_{AB} + S_{max,AB_2} f_{AB_2}
+}
+$$
+
+<p class="vf-intro__text">
+    where \( S_{\text{max},AB} \) is the maximum signal produced by the complex with one bound analyte, and \( S_{\text{max},AB_2} \) is the maximum signal produced by the complex with two bound analytes.
+    One imporant assumption of this model is that binding to any of the two sites produces the same signal.
+</p>
+
+<p class="vf-intro__text">
+During the dissociation step, the concentration of \( B \) is zero, simplifying the differential equations to:
+</p>
+
+$$
+\large{
+\frac{df_{AB}}{dt}
+=
+(-k_{\text{off}})\,f_{AB}
++
+\left(\frac{2k_{\text{off}}}{\sqrt{\sigma}}\right) f_{AB_2}
+}
+$$
+
+$$
+\large{
+\frac{df_{AB_2}}{dt}
+=
+-\left(\frac{2k_{\text{off}}}{\sqrt{\sigma}}\right) f_{AB_2}
+}
+$$
+
+<p class="vf-intro__text">
+Note: This model is available for simulation purposes, but not for fitting experimental data.
+</p>
+
+</div>
+
+</div>
 
 <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link" onclick="myFunction('solutionBased')"
 >Solution-based binding<svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
