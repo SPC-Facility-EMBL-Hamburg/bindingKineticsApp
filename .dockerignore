@@ -1,0 +1,9 @@
+.git
+.github
+.DS_Store
+**/.DS_Store
+.Rhistory
+.Rproj.user
+renv/library
+renv/staging
+lint.log

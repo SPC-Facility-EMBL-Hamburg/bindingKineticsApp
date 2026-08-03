@@ -1,0 +1,5 @@
+{
+  "output": {
+    "fitResults-fittingInfoKinetics": "<table  class = 'table shiny-table table- spacing-s' style = 'width:auto;'>\n<thead> <tr> <th style='text-align: right;'> k_on [1/(s*µM)] <\/th> <th style='text-align: right;'> k_off [1/s] <\/th> <th style='text-align: right;'> k_c [1/s] <\/th> <th style='text-align: right;'> k_rev [1/s] <\/th> <th style='text-align: right;'> Smax <\/th> <th style='text-align: left;'> Name <\/th>  <\/tr> <\/thead> <tbody>\n  <tr> <td align=\"right\"> 0.33335 <\/td> <td align=\"right\"> 0.00696 <\/td> <td align=\"right\"> 0.00227 <\/td> <td align=\"right\"> 0.00105 <\/td> <td align=\"right\"> 0.40634 <\/td> <td> wt - imd <\/td> <\/tr>\n   <\/tbody> <\/table>"
+  }
+}
