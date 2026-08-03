@@ -28,7 +28,9 @@ box::use(
     span,
     tagList,
     textInput,
-    updateSelectInput
+    updateSelectInput,
+    tags,
+    removeModal
   ],
   shinydashboard[
     box
