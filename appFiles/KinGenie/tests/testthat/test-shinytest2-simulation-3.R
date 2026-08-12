@@ -3,7 +3,7 @@ library(testthat)
 
 TIMEOUT <- 10000
 
-test_that("KinGenie simulation workflow 1", {
+test_that("KinGenie simulation and download workflow", {
   app <- AppDriver$new(
     test_path("../.."),
     variant = "ci", name = "KinGenie-simulation",
@@ -157,31 +157,20 @@ test_that("KinGenie simulation workflow 1", {
   )
   wait_for_idle()
 
-  click("modelSelectionAndRun-btn_cal_simulation")
-  accept_modal()
-  wait_for_idle()
-
-  expect_plotly_equal(
-    "simPlotTabBox-signal_sim_plot",
-    test_path("reference", "signal_sim_plot_1.rds")
-  )
-
   set_input(list(
-    "modelSelectionAndRun-model_type_sim" = "solution"
+    "modelSelectionAndRun-model_selected_sim" = "heterogeneous_ligand",
+    "experimentalParams-is_single_cycle_sim" = TRUE
   ))
+
   wait_for_idle()
-  set_input(
-    list(
-      "modelSelectionAndRun-model_selected_sim" = "one_site_conformational_selection"
-    )
-  )
-  wait_for_idle()
+
   click("modelSelectionAndRun-btn_cal_simulation")
   accept_modal()
   wait_for_idle()
+
   expect_plotly_equal(
     "simPlotTabBox-signal_sim_plot",
-    test_path("reference", "signal_sim_plot_2.rds")
+    test_path("reference", "signal_sim_plot_31.rds")
   )
 
   app$expect_download("simResultsExport-btn_export_simulation")

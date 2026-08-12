@@ -109,6 +109,30 @@ print_model_message <- function(model_type_sim, model_selected_sim) {
     )
   }
 
+  if (model_selected_sim == "heterogeneous_ligand") {
+    pop_up_info(
+      paste0("The simulation will be performed using ", model_typ_text, "<br>
+            The chemical equations are
+            P + L<sub>1</sub> ⇄ PL<sub>1</sub>
+            (binding to ligand in state 1) and
+            P + L<sub>2</sub> ⇄ PL<sub>2</sub>
+            (binding to ligand in state 2). <br>
+            The chemical reactions are: <br>
+            <span style='display: inline-block; text-align: center;'>
+            k<sub>on,1</sub><br>
+            P + L<sub>1</sub> → PL<sub>1</sub> <br>
+            k<sub>off,1</sub><br>
+            PL<sub>1</sub> → P + L<sub>1</sub> <br>
+            k<sub>on,2</sub><br>
+            P + L<sub>2</sub> → PL<sub>2</sub> <br>
+            k<sub>off,2</sub><br>
+            PL<sub>2</sub> → P + L<sub>2</sub> <br>
+            </span> <br>
+            Please wait until the simulation is completed."),
+      size = "l"
+    )
+  }
+
 
   if (model_selected_sim == "one_site_mtl") {
     pop_up_info(
