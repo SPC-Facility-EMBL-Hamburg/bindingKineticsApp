@@ -94,6 +94,7 @@ experimentalParamsServer <- function(id, sim_state) {
           if (model_type == "surface" &&
             !model_selected %in% c(
               "heterogeneous_analyte",
+              "heterogeneous_ligand",
               "ligand_has_two_sites"
             )) {
             column(
@@ -130,7 +131,7 @@ experimentalParamsServer <- function(id, sim_state) {
             )
           },
           if (model_type == "surface" &&
-            model_selected == "heterogeneous_analyte") {
+            model_selected %in% c("heterogeneous_analyte","heterogeneous_ligand")) {
             column(
               4,
               p(

@@ -107,7 +107,10 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
                 ns("fittingModel"), NULL,
                 c(
                   "One-to-one" = "one_to_one",
-                  "One-to-one (MTL)" = "one_to_one_mtl"
+                  "One-to-one (MTL)" = "one_to_one_mtl",
+                  "One-to-one (induced fit)" = "one_to_one_if",
+                  "Two-to-one" = "two_to_one",
+                  "Heterogeneous ligand" = "heterogeneous_ligand"
                 )
               ),
               tippy_this(
@@ -208,14 +211,22 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
             "One-to-one" = "one_to_one",
             "One-to-one (MTL)" = "one_to_one_mtl",
             "One-to-one (induced fit)" = "one_to_one_if",
-            "Two-to-one" = "two_to_one"
+            "Two-to-one" = "two_to_one",
+            "Heterogeneous ligand" = "heterogeneous_ligand"
+          )
+        )
+      } else if (input$fittingRegion == "steady_state") {
+        updateSelectInput(session, "fittingModel",
+          choices = c(
+            "One-to-one" = "one_to_one",
+            "Two-to-one" = "two_to_one",
+            "Heterogeneous ligand" = "heterogeneous_ligand"
           )
         )
       } else {
         updateSelectInput(session, "fittingModel",
           choices = c(
-            "One-to-one" = "one_to_one",
-            "Two-to-one" = "two_to_one"
+            "One-to-one" = "one_to_one"
           )
         )
       }
@@ -338,8 +349,8 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
       if (fittingRegion == "steady_state") {
         fittingModel <- input$fittingModel
 
-        # Re fit if the user-selected the two_to_one model, because the steady-state fitting is done with the one-to-one model
-        if (fittingModel == "two_to_one") {
+        # Re-fit models whose steady-state equations differ from the one-to-one pre-fit.
+        if (fittingModel %in% c("two_to_one", "heterogeneous_ligand")) {
           pyKinetics$submit_steady_state_fitting(
             fittingModel,
             fit_sigma = input$fitSigmaTwoToOne

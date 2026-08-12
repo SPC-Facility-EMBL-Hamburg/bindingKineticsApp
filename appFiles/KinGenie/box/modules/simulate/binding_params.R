@@ -112,7 +112,7 @@ bindingParamsServer <- function(id, sim_state) {
         },
 
         ## --------------------------------------------------
-        ## Heterogeneous analyte
+        ## Heterogeneous analyte 
         ## --------------------------------------------------
 
         if (model == "heterogeneous_analyte") {
@@ -151,6 +151,43 @@ bindingParamsServer <- function(id, sim_state) {
               column(2, p(
                 HTML("<b>Population 2 Smax</b>"),
                 textOutput(ns("pop2_sim_smax"))
+              ))
+            )
+          )
+        },
+
+        ## --------------------------------------------------
+        ## Heterogeneous ligand 
+        ## --------------------------------------------------
+
+        if (model == "heterogeneous_ligand") {
+          tagList(
+            fluidRow(
+              column(2, p(
+                HTML("<b>K<sub>d,1</sub> [μM]</b>"),
+                numericInput(ns("kd1_sim_hetero"), NULL, 0.5)
+              )),
+              column(2, p(
+                HTML("<b>k<sub>off,1</sub> [1/s]</b>"),
+                numericInput(ns("koff1_sim_hetero"), NULL, 0.01)
+              )),
+              column(2, p(
+                HTML("<b>K<sub>d,2</sub> [μM]</b>"),
+                numericInput(ns("kd2_sim_hetero"), NULL, 0.5)
+              )),
+              column(2, p(
+                HTML("<b>k<sub>off,2</sub> [1/s]</b>"),
+                numericInput(ns("koff2_sim_hetero"), NULL, 0.01)
+              ))
+            ),
+            fluidRow(
+              column(2, p(
+                HTML("<b>Fraction site 1 [%]</b>"),
+                numericInput(ns("pop1_sim_hetero"), NULL, 50)
+              )),
+              column(2, p(
+                  HTML("<b>Fraction site 2 [%]</b>"),
+                  textOutput(ns("pop2_sim_hetero"))
               ))
             )
           )
@@ -277,6 +314,7 @@ bindingParamsServer <- function(id, sim_state) {
     # Update smax of each population to be between 0 and the global smax
     observeEvent(sim_state$total_smax_sim, {
       smax_global <- sim_state$total_smax_sim
+      req(input$pop1_sim_smax)
       smax_1 <- input$pop1_sim_smax
       smax_2 <- smax_global - smax_1
       diff <- smax_global - smax_1 - smax_2

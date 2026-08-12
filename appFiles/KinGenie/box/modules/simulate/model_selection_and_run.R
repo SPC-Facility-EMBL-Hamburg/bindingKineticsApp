@@ -69,8 +69,7 @@ modelSelectionAndRunUI <- function(id) {
             c(
               "1:1" = "one_site",
               "1:1 (induced fit)" = "one_site_induced_fit",
-              "1:1 (conformational selection)" = "one_site_conformational_selection" # ,
-              # "1:1 (two ligands)"  = "heteregeneous_ligand"
+              "1:1 (conformational selection)" = "one_site_conformational_selection" 
             ),
             selectize = FALSE
           ), # Set selectize to FALSE to avoid text overflowing outside the box
@@ -123,8 +122,9 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
           "1:1 (mass transport limitation)" = "one_site_mtl",
           "1:1 (induced fit)" = "one_site_induced_fit",
           "1:1 (conformational selection)" = "one_site_conformational_selection",
-          "Heterogeneous analyte" = "heterogeneous_analyte",
-          "2:1 (ligand has two binding sites)" = "ligand_has_two_sites"
+          "2:1 Heterogeneous analyte" = "heterogeneous_analyte",
+          "2:1 (ligand has two binding sites)" = "ligand_has_two_sites",
+          "2:1 Heterogeneous ligand" = "heterogeneous_ligand"
         ))
       } else {
         updateSelectInput(session, "model_selected_sim", choices = c(
@@ -251,7 +251,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
         k_rev <- sim_state$krev_sim_1to1_adv
       }
 
-      if (model_selected_sim == "heterogeneous_analyte") {
+      if (model_selected_sim %in% c("heterogeneous_analyte", "heterogeneous_ligand")) {
         Kd1 <- sim_state$kd1_sim_hetero
         k_off1 <- sim_state$koff1_sim_hetero
         Kd2 <- sim_state$kd2_sim_hetero
@@ -259,30 +259,33 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
         pop1 <- sim_state$pop1_sim_hetero / 100
         pop2 <- 1 - pop1
 
-        smax1 <- sim_state$pop1_sim_smax
-        smax2 <- sim_state$total_smax_sim - smax1
+        if (model_selected_sim == "heterogeneous_analyte") {
+          smax1 <- sim_state$pop1_sim_smax
+          smax2 <- sim_state$total_smax_sim - smax1
 
-        if (smax1 < 0 || smax2 < 0) {
-          pop_up_warning("The Smax of each population must be greater than 0.
-                    Change the values of the Total Smax and the Smax of Population 1.")
-          req(FALSE)
-        }
+          if (smax1 < 0 || smax2 < 0) {
+            pop_up_warning("The Smax of each population must be greater than 0.
+                      Change the values of the Total Smax and the Smax of Population 1.")
+            req(FALSE)
+          }
 
-        np_pop_fractions <- np_array(c(pop1, pop2))
-        np_max_signal <- np_array(c(smax1, smax2))
-        np_Kds <- np_array(c(Kd1, Kd2))
-        np_k_offs <- np_array(c(k_off1, k_off2))
+          np_pop_fractions <- np_array(c(pop1, pop2))
+          np_max_signal <- np_array(c(smax1, smax2))
+          np_Kds <- np_array(c(Kd1, Kd2))
+          np_k_offs <- np_array(c(k_off1, k_off2))
 
-        if (pop1 + pop2 != 1) {
-          pop_up_warning("The sum of the populations must be equal to 100%")
-          req(FALSE)
-        }
+          if (pop1 + pop2 != 1) {
+            pop_up_warning("The sum of the populations must be equal to 100%")
+            req(FALSE)
+          }
 
-        if ((smax1 + smax2) != sim_state$total_smax_sim) {
-          pop_up_warning("The sum of the populations Smax must be equal to the total Smax")
-          req(FALSE)
+          if ((smax1 + smax2) != sim_state$total_smax_sim) {
+            pop_up_warning("The sum of the populations Smax must be equal to the total Smax")
+            req(FALSE)
+          }
         }
       }
+
 
       # Surface binding
       if (model_type_sim == "surface") {
@@ -294,6 +297,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
           "one_site_induced_fit",
           "one_site_conformational_selection",
           "heterogeneous_analyte",
+          "heterogeneous_ligand",
           "ligand_has_two_sites"
         )
 
@@ -329,7 +333,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
         }
 
         # Obtain the smax
-        if (model_selected_sim == "heterogeneous_analyte") {
+        if (model_selected_sim %in% c("heterogeneous_analyte", "heterogeneous_ligand")) {
           smax_all <- sim_state$total_smax_sim / (sim_state$prot_dil_factor_sim^(0:floor(sim_state$numb_dil_sim_prot)))
         } else if (model_selected_sim == "ligand_has_two_sites") {
           pl_rmax_all <- sim_state$pl_rmax_sim_two_sites / (sim_state$prot_dil_factor_sim^(0:floor(sim_state$numb_dil_sim_prot)))
@@ -379,6 +383,27 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
                 np_association_time,
                 0, lc / 2, lc, Kd, k_off, k_tr, smax
               )
+            }
+
+            if (model_selected_sim == "heterogeneous_ligand") {
+
+              signal_matrix <- pykingenie$solve_two_site_heterogeneous_ligand_association(
+                time = np_association_time,
+                a_conc = lc,
+                Kd1 = Kd1,
+                koff1 = k_off1,
+                Kd2 = Kd2,
+                koff2 = k_off2,
+                Rmax = sim_state$total_smax_sim,
+                fraction_site1 = pop1
+              )
+
+              signal_df <- as.data.frame(signal_matrix)
+
+              colnames(signal_df) <- c("signal", "signal_site_1", "signal_site_2")
+
+              signal <- signal_df$signal
+
             }
 
             if (model_selected_sim == "heterogeneous_analyte") {
@@ -451,6 +476,28 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
             if (model_selected_sim == "one_site_mtl") {
               signal <- pykingenie$solve_ode_one_site_mass_transport_dissociation(np_dissociation_time, s0, Kd, k_off, k_tr, smax)
+            }
+
+            if (model_selected_sim == "heterogeneous_ligand") {
+              # Signal of the first and second populations
+              signal_site_1 <- tail(signal_df$signal_site_1, 1)
+              signal_site_2 <- tail(signal_df$signal_site_2, 1)
+
+              signal_matrix <- pykingenie$solve_two_site_heterogeneous_ligand_dissociation(
+                time = np_dissociation_time_shift,
+                koff1 = k_off1,
+                koff2 = k_off2,
+                s1_0 = signal_site_1,
+                s2_0 = signal_site_2,
+              )
+
+              signal_df <- as.data.frame(signal_matrix)
+
+              colnames(signal_df) <- c("signal", "signal_site_1", "signal_site_2")
+
+              signal <- signal_df$signal
+
+              signal_d_adv[[length(signal_d_adv) + 1]] <- tail(signal_df[, c("signal_site_1", "signal_site_2")], 1)
             }
 
             if (model_selected_sim == "heterogeneous_analyte") {
@@ -617,6 +664,32 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
                   )
                 }
 
+                if (model_selected_sim == "heterogeneous_ligand") {
+                  last_col <- c(disso_signal_adv[[lc_counter]])
+
+                  signal_site_1 <- last_col$signal_site_1[1]
+                  signal_site_2 <- last_col$signal_site_2[1]
+
+                  signal_matrix <- pykingenie$solve_two_site_heterogeneous_ligand_association(
+                    time = np_association_time_shifted,
+                    a_conc = lc,
+                    Kd1 = Kd1,
+                    koff1 = k_off1,
+                    Kd2 = Kd2,
+                    koff2 = k_off2,
+                    Rmax = sim_state$total_smax_sim,
+                    fraction_site1 = pop1,
+                    s1_0 = signal_site_1,
+                    s2_0 = signal_site_2
+                  )
+
+                  signal_df <- as.data.frame(signal_matrix)
+
+                  colnames(signal_df) <- c("signal", "signal_site_1", "signal_site_2")
+
+                  signal <- signal_df$signal
+                }
+
                 if (model_selected_sim == "heterogeneous_analyte") {
                   last_col <- c(disso_signal_adv[[lc_counter]])
 
@@ -720,6 +793,28 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
                   )
                 }
 
+                if (model_selected_sim == "heterogeneous_ligand") {
+                  # Signal of the first and second populations
+                  signal_site_1 <- tail(signal_df$signal_site_1, 1)
+                  signal_site_2 <- tail(signal_df$signal_site_2, 1)
+
+
+                  signal_matrix <- pykingenie$solve_two_site_heterogeneous_ligand_dissociation(
+                    time = np_dissociation_time_shifted,
+                    koff1 = k_off1,
+                    koff2 = k_off2,
+                    s1_0 = signal_site_1,
+                    s2_0 = signal_site_2
+                  )
+
+                  signal_df <- as.data.frame(signal_matrix)
+
+                  colnames(signal_df) <- c("signal", "signal_site_1", "signal_site_2")
+
+                  signal <- signal_df$signal
+
+                }
+
                 if (model_selected_sim == "heterogeneous_analyte") {
                   # Signal of the first and second populations
                   signal1 <- tail(signal_matrix[1, ], 1)
@@ -785,7 +880,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
                 if (model_selected_sim %in% c(
                   "one_site_induced_fit",
                   "one_site_conformational_selection",
-                  "ligand_has_two_sites"
+                  "ligand_has_two_sites",
+                  "heterogeneous_ligand"
                 )) {
                   signal_d_adv[[length(signal_d_adv) + 1]] <- tail(signal_df, 1)
                 }
