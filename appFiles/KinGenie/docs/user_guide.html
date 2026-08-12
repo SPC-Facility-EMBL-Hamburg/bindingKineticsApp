@@ -760,6 +760,8 @@ Note: This model is available for simulation purposes, but not for fitting exper
 
   <p class="vf-intro__text">
       In this case, the interacting species are in solution and the concentrations of all species change over time.
+      Solution data can also be fitted empirically with single and double exponential models.
+      These models are useful for estimating observed relaxation rates without assuming a full mechanistic binding scheme.
   </p>
 
     <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link-oneToOneSolution"
@@ -1046,12 +1048,14 @@ $$
 <div id="fitting" style="display:none">
 
   <p class="vf-intro__text">
-      For now, KinGenie only supports surface-based binding models.
+      KinGenie supports the following fitting methods for surface-based binding data:
       The steady-state data can be analysed with the one-to-one, two-to-one, and heterogeneous ligand models.
       The kinetic data can be analysed with the one-to-one, one-to-one mass transport limitation (MTL),
       one-to-one induced fit, two-to-one, and heterogeneous ligand models.
-      Fitting the steady-state provides equilibrium dissociation constants and signal amplitudes.
-      Fitting the kinetic data also provides dissociation rate constants.
+      Fitting the surface-based steady-state provides equilibrium dissociation constants and signal amplitudes.
+      Fitting the surface-based kinetic data also provides dissociation rate constants.
+      Regarding solution-based kinetic data, it can be fitted with single and double exponential models, 
+      as well as one binding site and induced-fit models.
   </p>
 
   <p class="vf-intro__text">
@@ -1098,6 +1102,32 @@ $$
    <p class="vf-intro__text">
        In the ideal case, the observed constants should be linear with the ligand concentration.
   </p>
+
+</div>
+
+<br>
+    <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);"
+                                      id="section-link-kobs" onclick="myFunction('fittingSuggestions')"
+ style="padding-left: 20px;">
+  Suggestions (surface-based binding) <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="fittingSuggestions" style="display:none">
+<br>
+<p class="vf-intro__text">
+
+Once the fitting is done, it is important to check the fitted curves and the fitted parameters. 
+The constants should be within expected ranges, and the signal amplitude ($S_{\text{max}}$) should be reasonable. 
+In the ideal case, if a local per-curve ($S_{\text{max}}$) is used, the fitted $S_{\text{max}}$ should be similar for all curves 
+that belong to biosensors that were loaded with the same amount of ligand.
+
+Moreover, the fitting of more complex models should be done with caution, unless there is a strong mechanistic reason to do so.
+As suggested in <a href="https://www.sprpages.nl/data-fitting/kinetic-models" target="_blank">www.sprpages.nl</a>, it is important to verify that
+the ligand and the analyte are pure and homogenous; the association phase has enough curvature; the dissociation phase is long enough;
+there is no buffer mismatch; the analyte concentration range is wide enough; the behaviour is reproducible. 
+
+</p>
 
 </div>
 </div>
