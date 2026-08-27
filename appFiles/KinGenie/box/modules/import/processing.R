@@ -8,6 +8,9 @@ box::use(
     get_plotting_df,
     get_rtable_processing
   ],
+  reticulate[
+    py_last_error
+  ],
   rhandsontable[
     hot_to_r,
     renderRHandsontable,
