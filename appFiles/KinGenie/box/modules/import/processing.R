@@ -9,6 +9,9 @@ box::use(
     get_rtable_processing,
     get_sensor_df
   ],
+  .. / .. / dialogs[
+    pop_up_warning
+  ],
   reticulate[
     py_last_error
   ],
