@@ -6,12 +6,15 @@ box::use(
   ],
   .. / .. / tables[
     get_plotting_df,
-    get_rtable_processing
+    get_rtable_processing,
+    get_sensor_df
   ],
   reticulate[
     py_last_error
   ],
   rhandsontable[
+    hot_col,
+    hot_table,
     hot_to_r,
     renderRHandsontable,
     rhandsontable,
@@ -284,16 +287,16 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
             experiment <- pyKinetics$experiments[[exp_name]]
             sensor_names <- experiment$sensor_names
 
-            df_temp <- get_sensor_df(sensor_names, exp_name)
+            df_temp  <- get_sensor_df(sensor_names, exp_name)
             dfs[[i]] <- df_temp
           }
 
           df <- do.call(rbind, dfs)
 
-          rdf <- rhandsontable(df) %>%
-            hot_col("Select") %>%
-            hot_table(stretchH = "all") %>%
-            hot_col("ID", readOnly = TRUE) %>%
+          rdf <- rhandsontable(df) |>
+            hot_col("Select") |>
+            hot_table(stretchH = "all") |>
+            hot_col("ID", readOnly = TRUE) |>
             hot_col("Experiment", readOnly = TRUE)
 
           output$tableSelection <- renderRHandsontable({
