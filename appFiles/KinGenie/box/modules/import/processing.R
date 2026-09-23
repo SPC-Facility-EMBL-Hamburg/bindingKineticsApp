@@ -10,6 +10,7 @@ box::use(
     get_sensor_df
   ],
   .. / .. / dialogs[
+    pop_up_info,
     pop_up_warning
   ],
   reticulate[
@@ -278,7 +279,7 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
       if (operation %in% c("average", "align_association", "correct_dissociation")) {
         if (sel_exp != "All") {
           rdf <- get_rtable_processing(sensor_names)
-          print(rdf)
+          
           output$tableSelection <- renderRHandsontable({
             rdf
           })
@@ -441,9 +442,34 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
 
       other_exp <- pyKinetics$experiments[[input$baselineExperiment]]
 
+      compatibility_check <- exp$find_experiments_compatibility(other_exp)
+
+      are_compatible    <- compatibility_check[[1]]
+      compatibility_status <- compatibility_check[[2]]
+
+      if (!are_compatible) {
+        pop_up_warning(
+          paste0("⚠ Experiments are not compatible because the time data is different")
+        )
+        req(FALSE)
+      }
+
+      # Check the type of compatibility
+      # We have two possible types of compatibility: "all" and "interaction"
+      # In the case of "all" the time data is exactly equal
+      # In the case of "interaction" the time data is the same, ignoring the start time, for the association and dissociation steps.
+      only_interaction <- compatibility_status != "all"
+
+      if (only_interaction) {
+        pop_up_info(
+          paste0("Experiments are only compatible for interaction (association and dissociation) steps 
+          because the start times are different.")
+        )
+      }
+
       result <- tryCatch(
         {
-          exp$subtract_experiment(other_exp, inplace = input$expSubtractionIsInPlace)
+          exp$subtract_experiment(other_exp, inplace = input$expSubtractionIsInPlace, only_interaction = only_interaction)
         },
         error = function(e) {
           if (inherits(e, "python.builtin.RuntimeError")) {
