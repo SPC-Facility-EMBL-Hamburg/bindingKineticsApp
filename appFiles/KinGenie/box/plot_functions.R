@@ -85,27 +85,93 @@ config_fig <- function(fig, nameForDownload, plot_type, plot_width, plot_height)
   )
 }
 
-## Auxiliary function to convert a list of plots into a single figure with subplots
-plot_list_to_fig <- function(plot_name, plot_list, title_text, axis_size,
-                             plot_type, plot_width, plot_height, nrows = 2, share_axis = TRUE) {
-  i <- length(plot_list)
+plot_list_to_fig <- function(
+    plot_name, plot_list, title_text, axis_size,
+    plot_type, plot_width, plot_height,
+    nrows = 3, share_axis = TRUE, panel_titles = NULL
+) {
+  n <- length(plot_list)
 
-  if (i > 1) {
-    if (share_axis) {
-      fig <- subplot(plot_list, nrows = nrows, margin = c(0.03, 0.03, 0.1, 0.2), shareY = TRUE, shareX = TRUE)
-    } else {
-      fig <- subplot(plot_list,
-        nrows = nrows, margin = c(0.03, 0.03, 0.05, 0.05),
-        shareY = FALSE, shareX = FALSE, titleX = TRUE, titleY = TRUE
+  if (n > 1) {
+    ncols <- ceiling(n / nrows)
+    nslots <- nrows * ncols
+
+    # Pad incomplete grid
+    if (n < nslots) {
+      empty_plot <- plot_ly() |>
+        layout(
+          xaxis = list(visible = FALSE),
+          yaxis = list(visible = FALSE),
+          showlegend = FALSE
+        )
+
+      plot_list <- c(
+        plot_list,
+        rep(list(empty_plot), nslots - n)
       )
     }
+
+    fig <- subplot(
+      plot_list,
+      nrows = nrows,
+      widths = rep(1 / ncols, ncols),
+      heights = rep(1 / nrows, nrows),
+      margin = c(0.04, 0.04, 0.1, 0.1),
+      shareX = share_axis,
+      shareY = share_axis,
+      titleX = !share_axis,
+      titleY = !share_axis
+    )
+
+    # Panel titles
+    if (!is.null(panel_titles) && length(panel_titles) == n) {
+      annotations <- lapply(seq_len(n), function(k) {
+        row <- ceiling(k / ncols)
+        col <- (k - 1) %% ncols + 1
+
+        title <- as.character(panel_titles[k])
+
+        if (is.na(title) || title == "") {
+          return(NULL)
+        }
+
+        if (row == 1) {
+          y <- 1 + 0.03
+        } else {
+          y <- 1 - (row - 1) / nrows - 0.03
+        }
+
+        list(
+          x = (col - 0.5) / ncols,
+          y = y,
+          xref = "paper",
+          yref = "paper",
+          text = title,
+          showarrow = FALSE,
+          xanchor = "center",
+          yanchor = "top",
+          font = list(size = axis_size)
+        )
+      })
+
+      annotations <- Filter(Negate(is.null), annotations)
+
+      if (length(annotations)) {
+        fig <- fig |> layout(annotations = annotations)
+      }
+    }
+
   } else {
-    fig <- plot_list[[1]] |> layout(title = list(text = title_text, font = list(size = axis_size)))
+    fig <- plot_list[[1]] |>
+      layout(
+        title = list(
+          text = title_text,
+          font = list(size = axis_size)
+        )
+      )
   }
 
-  fig <- config_fig(fig, plot_name, plot_type, plot_width, plot_height)
-
-  fig
+  config_fig(fig, plot_name, plot_type, plot_width, plot_height)
 }
 
 # This function will:
@@ -383,7 +449,7 @@ plot_steady_state <- function(
 
     yFit <- fit$signal_ss_fit
 
-    names <- fit$names
+    name <- fit$name
 
     for (i in 1:length(fit$lig_conc_lst_per_id)) {
       x <- as.numeric(fit$lig_conc_lst_per_id[[i]])
@@ -397,7 +463,7 @@ plot_steady_state <- function(
 
       fig <- add_trace(
         fig,
-        x = log10(x), y = y, type = "scatter", name = names[i],
+        x = log10(x), y = y, type = "scatter", name = name,
         marker = list(size = marker_size)
       )
 
@@ -410,7 +476,7 @@ plot_steady_state <- function(
         fig <- add_trace(
           fig,
           data = df_fit, x = ~ log10(x), y = ~y,
-          mode = "lines", name = names[i],
+          mode = "lines", name = name,
           line = list(color = "black", width = line_width),
           showlegend = FALSE
         )
@@ -467,7 +533,7 @@ plot_steady_state <- function(
     fig_lst[[length(fig_lst) + 1]] <- fig
   }
 
-  fig <- plot_list_to_fig("Steady-state_plot", fig_lst, "Steady-state", font_size, plot_type, plot_width, plot_height, 2, FALSE)
+  fig <- plot_list_to_fig("Steady-state_plot", fig_lst, "Steady-state", font_size, plot_type, plot_width, plot_height, 3, FALSE)
 
   fig
 }
@@ -581,7 +647,7 @@ plot_steady_state_residuals <- function(
 
   fig <- plot_list_to_fig(
     "Steady-state_residuals_plot", fig_lst, "Steady-state residuals",
-    font_size, plot_type, plot_width, plot_height, 2, FALSE
+    font_size, plot_type, plot_width, plot_height, 3, FALSE
   )
 
   fig
@@ -616,6 +682,8 @@ plot_association_dissociation <- function(
   x_nticks <- plot_config$n_xticks
   y_nticks <- plot_config$n_yticks
 
+  show_plot_title <- plot_config$show_plot_title
+
   fig_lst <- list()
 
   all_lig_conc <- unlist(lapply(pyKinetics_fittings, function(fit) fit$lig_conc_lst))
@@ -632,9 +700,32 @@ plot_association_dissociation <- function(
   max_y_all <- -1e10
 
   count <- 0
+  panel_titles <- c()
+  nrows_plot <- 3
+  total_panels <- if (split_by_smax_id) {
+    sum(vapply(
+      pyKinetics_fittings,
+      function(fit) length(fit$lig_conc_lst_per_id),
+      integer(1)
+    ))
+  } else {
+    length(pyKinetics_fittings)
+  }
+  ncols_plot <- ceiling(total_panels / nrows_plot)
+  bottom_row <- ceiling(total_panels / ncols_plot)
+  panel_index <- 0
 
   for (fit in pyKinetics_fittings) {
-    if (!split_by_smax_id) fig <- plot_ly() # Create a new figure for all replicates
+
+    plot_titles <- fit$names
+
+    if (!split_by_smax_id) {
+      panel_index <- panel_index + 1
+      current_panel_index <- panel_index
+      fig <- plot_ly() # Create a new figure for all replicates
+      # Remove string after '_id'
+      plot_title <- gsub("_id.*", "", plot_titles[1])
+    }
 
     lig_conc <- fit$lig_conc_lst_per_id
 
@@ -652,7 +743,19 @@ plot_association_dissociation <- function(
     raw_curves_disso <- fit$disso_lst
 
     for (i in 1:length(lig_conc)) {
-      if (split_by_smax_id) fig <- plot_ly() # Create a new figure per replicate
+      if (split_by_smax_id) {
+        panel_index <- panel_index + 1
+        current_panel_index <- panel_index
+        # Create a new figure per replicate
+        fig <- plot_ly() 
+        # Remove string after 'id_'
+        plot_title <- gsub("_id_.*", "", plot_titles[i])
+
+        # Add rep number if more than one option
+        if (i > 1) {
+          plot_title <- paste0(plot_title, " (Rep: ", i, ")")
+        }
+      } 
 
       count <- count + 1
 
@@ -786,9 +889,15 @@ plot_association_dissociation <- function(
       y_ticks_pos <- y_ticks_info$tickpos
       y_ticks_text <- y_ticks_info$ticktext
 
+      panel_col <- ((current_panel_index - 1) %% ncols_plot) + 1
+      has_panel_below <- (current_panel_index + ncols_plot) <= total_panels
+
+      x_axis_label_panel <- if (!has_panel_below) x_axis_label else ""
+      y_axis_label_panel <- if (panel_col == 1) y_axis_label else ""
+
       fig <- fig |> layout(
         xaxis = list(
-          title = x_axis_label,
+          title = x_axis_label_panel,
           tickfont = list(size = font_size),
           titlefont = list(size = font_size),
           showgrid = show_grid_x,
@@ -803,7 +912,7 @@ plot_association_dissociation <- function(
           range = as.list(extendrange(c(min_x_all, max_x_all)), 0.02)
         ),
         yaxis = list(
-          title = y_axis_label,
+          title = y_axis_label_panel,
           tickfont = list(size = font_size),
           titlefont = list(size = font_size),
           showgrid = show_grid_y,
@@ -834,13 +943,27 @@ plot_association_dissociation <- function(
 
       if (split_by_smax_id) {
         fig_lst[[length(fig_lst) + 1]] <- fig
+        if (isTRUE(show_plot_title)) {
+          panel_titles <- c(panel_titles, plot_title)
+        }
       }
     }
 
-    if (!split_by_smax_id) fig_lst[[length(fig_lst) + 1]] <- fig
+    if (!split_by_smax_id) {
+      fig_lst[[length(fig_lst) + 1]] <- fig
+      if (isTRUE(show_plot_title)) {
+        panel_titles <- c(panel_titles, plot_title)
+      }
+    }
   }
 
-  fig <- plot_list_to_fig("Association-traces_plot", fig_lst, "Kinetic traces", font_size, plot_type, plot_width, plot_height, 2, FALSE)
+  title_text <- if (length(panel_titles) > 0) panel_titles[1] else "Kinetic traces"
+
+  fig <- plot_list_to_fig(
+    "Association-traces_plot", fig_lst, title_text, font_size,
+    plot_type, plot_width, plot_height, nrows_plot, FALSE,
+    panel_titles = if (isTRUE(show_plot_title)) panel_titles else NULL
+  )
 
   fig
 }
@@ -1446,7 +1569,7 @@ plot_association_dissociation_residuals <- function(
     if (!split_by_smax_id) fig_lst[[length(fig_lst) + 1]] <- fig
   }
 
-  fig <- plot_list_to_fig("residuals_plot", fig_lst, "Residuals", font_size, plot_type, plot_width, plot_height, 2, FALSE)
+  fig <- plot_list_to_fig("residuals_plot", fig_lst, "Residuals", font_size, plot_type, plot_width, plot_height, 3, FALSE)
 
   fig
 }

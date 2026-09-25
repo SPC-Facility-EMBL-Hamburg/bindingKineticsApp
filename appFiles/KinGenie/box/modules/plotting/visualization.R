@@ -99,7 +99,17 @@ visualizationConfigServer <- function(id, state, plot_config) {
                   value = isTRUE(plot_config()$split_by_smax)
                 )
               )
-            )
+            ),
+            column(
+              width = 6,
+              p(
+                HTML("<b>Show plot title</b>"),
+                checkboxInput(
+                  ns("visualization_show_plot_title"), NULL,
+                  value = isTRUE(plot_config()$show_plot_title)
+                )
+              )
+            ),
           ),
           easyClose = TRUE,
           footer = tagList(

@@ -30,7 +30,8 @@ plotConfigServer <- function(id) {
       tick_width = 2, # tick width
       split_by_smax = TRUE,
       smooth_curves = FALSE,
-      rolling_window_size = 0.5
+      rolling_window_size = 0.5,
+      show_plot_title = TRUE
     ))
   })
 }
