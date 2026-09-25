@@ -154,5 +154,12 @@ visualizationConfigServer <- function(id, state, plot_config) {
       cfg$split_by_smax <- isTRUE(input$visualization_split_by_smax)
       plot_config(cfg)
     })
+
+    observeEvent(input$visualization_show_plot_title, {
+      cfg <- plot_config()
+      cfg$show_plot_title <- isTRUE(input$visualization_show_plot_title)
+      plot_config(cfg)
+    })
+
   })
 }
