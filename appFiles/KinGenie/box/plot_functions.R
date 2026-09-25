@@ -449,7 +449,7 @@ plot_steady_state <- function(
 
     yFit <- fit$signal_ss_fit
 
-    name <- fit$name
+    names <- fit$names
 
     for (i in 1:length(fit$lig_conc_lst_per_id)) {
       x <- as.numeric(fit$lig_conc_lst_per_id[[i]])
@@ -460,6 +460,14 @@ plot_steady_state <- function(
 
       min_y_all <- min(min_y_all, min(y))
       max_y_all <- max(max_y_all, max(y))
+
+      # Remove extra string form pykingenie _id...
+      name <- gsub("_id_.*", "", names[i])
+
+      # Add rep number if there are multiple replicates
+      if (i > 1) {
+        name <- paste0(name, " (rep ", i, ")")
+      }
 
       fig <- add_trace(
         fig,
