@@ -7,6 +7,7 @@ box::use(
     subset_data
   ],
   grDevices[
+    colorRampPalette,
     extendrange
   ],
   plotly[
@@ -17,6 +18,9 @@ box::use(
     plot_ly,
     plotlyOutput,
     subplot
+  ],
+  RColorBrewer[
+    brewer.pal
   ],
   stats[
     lm,
@@ -678,6 +682,7 @@ plot_association_dissociation <- function(
   marker_size <- plot_config$marker_size
   line_width <- plot_config$line_width
   split_by_smax_id <- plot_config$split_by_smax
+  screen_mode <- isTRUE(plot_config$screen_mode)
   max_points_per_plot <- plot_config$max_points
   smooth_curves_fit <- plot_config$smooth_curves
   rolling_window <- plot_config$rolling_window_size
@@ -699,7 +704,11 @@ plot_association_dissociation <- function(
   min_lig <- min(all_lig_conc)
   max_lig <- max(all_lig_conc)
 
-  need_color_bar <- min_lig != max_lig
+  need_color_bar <- !screen_mode && min_lig != max_lig
+
+  if (screen_mode) {
+    split_by_smax_id <- FALSE
+  }
 
   min_x_all <- 1e10
   max_x_all <- -1e10
@@ -710,6 +719,21 @@ plot_association_dissociation <- function(
   count <- 0
   panel_titles <- c()
   nrows_plot <- 3
+  n_fits <- length(pyKinetics_fittings)
+
+  # Distinct colors per fit for screen mode using a Brewer qualitative palette.
+  if (screen_mode) {
+    n_base <- min(max(n_fits, 3), 12)
+    base_palette <- brewer.pal(n_base, "Set3")
+    if (n_fits > length(base_palette)) {
+      fit_colors <- colorRampPalette(base_palette)(n_fits)
+    } else {
+      fit_colors <- base_palette[seq_len(n_fits)]
+    }
+    fit_legend_added <- rep(FALSE, n_fits)
+    fig_screen <- plot_ly()
+  }
+
   total_panels <- if (split_by_smax_id) {
     sum(vapply(
       pyKinetics_fittings,
@@ -723,11 +747,14 @@ plot_association_dissociation <- function(
   bottom_row <- ceiling(total_panels / ncols_plot)
   panel_index <- 0
 
+  fit_index <- 0
   for (fit in pyKinetics_fittings) {
+    fit_index <- fit_index + 1
 
     plot_titles <- fit$names
+    fit_label <- gsub("_id.*", "", plot_titles[1])
 
-    if (!split_by_smax_id) {
+    if (!split_by_smax_id && !screen_mode) {
       panel_index <- panel_index + 1
       current_panel_index <- panel_index
       fig <- plot_ly() # Create a new figure for all replicates
@@ -751,7 +778,7 @@ plot_association_dissociation <- function(
     raw_curves_disso <- fit$disso_lst
 
     for (i in 1:length(lig_conc)) {
-      if (split_by_smax_id) {
+      if (split_by_smax_id && !screen_mode) {
         panel_index <- panel_index + 1
         current_panel_index <- panel_index
         # Create a new figure per replicate
@@ -775,7 +802,15 @@ plot_association_dissociation <- function(
 
       for (j in 1:n_traces) {
         l_conc <- l[j]
-        hex_color <- get_colors_from_numeric_values(l_conc, min_lig, max_lig)
+        if (screen_mode) {
+          hex_color <- fit_colors[fit_index]
+          show_fit_legend <- !fit_legend_added[fit_index]
+          trace_name <- fit_label
+        } else {
+          hex_color <- get_colors_from_numeric_values(l_conc, min_lig, max_lig)
+          show_fit_legend <- FALSE
+          trace_name <- paste0(i, " ", l[j])
+        }
 
         if (plot_assoc) {
           x <- time_assoc[[fc_counter]]
@@ -796,29 +831,58 @@ plot_association_dissociation <- function(
 
           # Use markers for non-smoothed data
           if (!smooth_curves_fit) {
-            fig <- add_trace(fig,
-              x = x_temp, y = y_temp, type = "scatter", mode = "markers",
-              name = paste0(i, " ", l[j]), color = I(hex_color), showlegend = FALSE,
-              marker = list(size = marker_size)
-            )
+            if (screen_mode) {
+              fig_screen <- add_trace(fig_screen,
+                x = x_temp, y = y_temp, type = "scatter", mode = "markers",
+                name = trace_name, color = I(hex_color), showlegend = show_fit_legend,
+                marker = list(size = marker_size)
+              )
+            } else {
+              fig <- add_trace(fig,
+                x = x_temp, y = y_temp, type = "scatter", mode = "markers",
+                name = trace_name, color = I(hex_color), showlegend = FALSE,
+                marker = list(size = marker_size)
+              )
+            }
           } else {
             # use lines for smoothed data
-            fig <- add_trace(fig,
-              x = x_temp, y = y_temp, type = "scatter", mode = "lines",
-              name = paste0(i, " ", l[j]), color = I(hex_color), showlegend = FALSE,
-              line = list(width = line_width)
-            )
+            if (screen_mode) {
+              fig_screen <- add_trace(fig_screen,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name, color = I(hex_color), showlegend = show_fit_legend,
+                line = list(width = line_width)
+              )
+            } else {
+              fig <- add_trace(fig,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name, color = I(hex_color), showlegend = FALSE,
+                line = list(width = line_width)
+              )
+            }
+          }
+
+          if (screen_mode && show_fit_legend) {
+            fit_legend_added[fit_index] <- TRUE
           }
 
           if (we_have_fitted_curves1 && plot_fit) {
             y_temp <- subset_data(fitted_curves_assoc[[fc_counter]], max_points = max_points_per_trace)
 
-            fig <- add_trace(fig,
-              x = x_temp, y = y_temp, type = "scatter", mode = "lines",
-              name = paste0(i, " ", l[j]),
-              line = list(color = "black", width = line_width), showlegend = FALSE,
-              inherit = FALSE
-            )
+            if (screen_mode) {
+              fig_screen <- add_trace(fig_screen,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name,
+                line = list(color = hex_color, width = line_width, dash = "dot"), showlegend = FALSE,
+                inherit = FALSE
+              )
+            } else {
+              fig <- add_trace(fig,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name,
+                line = list(color = "black", width = line_width), showlegend = FALSE,
+                inherit = FALSE
+              )
+            }
           }
         }
 
@@ -841,29 +905,54 @@ plot_association_dissociation <- function(
 
           # Use markers for non-smoothed data
           if (!smooth_curves_fit) {
-            fig <- add_trace(fig,
-              x = x_temp, y = y_temp, type = "scatter", mode = "markers",
-              name = paste0(i, " ", l[j]), color = I(hex_color), showlegend = FALSE,
-              marker = list(size = marker_size)
-            )
+            if (screen_mode) {
+              fig_screen <- add_trace(fig_screen,
+                x = x_temp, y = y_temp, type = "scatter", mode = "markers",
+                name = trace_name, color = I(hex_color), showlegend = FALSE,
+                marker = list(size = marker_size)
+              )
+            } else {
+              fig <- add_trace(fig,
+                x = x_temp, y = y_temp, type = "scatter", mode = "markers",
+                name = trace_name, color = I(hex_color), showlegend = FALSE,
+                marker = list(size = marker_size)
+              )
+            }
           } else {
             # use lines for smoothed data
-            fig <- add_trace(fig,
-              x = x_temp, y = y_temp, type = "scatter", mode = "lines",
-              name = paste0(i, " ", l[j]), color = I(hex_color), showlegend = FALSE,
-              line = list(width = line_width)
-            )
+            if (screen_mode) {
+              fig_screen <- add_trace(fig_screen,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name, color = I(hex_color), showlegend = FALSE,
+                line = list(width = line_width)
+              )
+            } else {
+              fig <- add_trace(fig,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name, color = I(hex_color), showlegend = FALSE,
+                line = list(width = line_width)
+              )
+            }
           }
 
           if (we_have_fitted_curves2 && plot_fit) {
             y_temp <- subset_data(fitted_curves_disso[[fc_counter]], max_points = max_points_per_trace)
 
-            fig <- add_trace(fig,
-              x = x_temp, y = y_temp, type = "scatter", mode = "lines",
-              name = paste0(i, " ", l[j]),
-              line = list(color = "black", width = line_width), showlegend = FALSE,
-              inherit = FALSE
-            )
+            if (screen_mode) {
+              fig_screen <- add_trace(fig_screen,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name,
+                line = list(color = hex_color, width = line_width, dash = "dot"), showlegend = FALSE,
+                inherit = FALSE
+              )
+            } else {
+              fig <- add_trace(fig,
+                x = x_temp, y = y_temp, type = "scatter", mode = "lines",
+                name = trace_name,
+                line = list(color = "black", width = line_width), showlegend = FALSE,
+                inherit = FALSE
+              )
+            }
           }
         }
 
@@ -897,72 +986,122 @@ plot_association_dissociation <- function(
       y_ticks_pos <- y_ticks_info$tickpos
       y_ticks_text <- y_ticks_info$ticktext
 
-      panel_col <- ((current_panel_index - 1) %% ncols_plot) + 1
-      has_panel_below <- (current_panel_index + ncols_plot) <= total_panels
+      if (!screen_mode) {
+        panel_col <- ((current_panel_index - 1) %% ncols_plot) + 1
+        has_panel_below <- (current_panel_index + ncols_plot) <= total_panels
 
-      x_axis_label_panel <- if (!has_panel_below) x_axis_label else ""
-      y_axis_label_panel <- if (panel_col == 1) y_axis_label else ""
+        x_axis_label_panel <- if (!has_panel_below) x_axis_label else ""
+        y_axis_label_panel <- if (panel_col == 1) y_axis_label else ""
 
-      fig <- fig |> layout(
-        xaxis = list(
-          title = x_axis_label_panel,
-          tickfont = list(size = font_size),
-          titlefont = list(size = font_size),
-          showgrid = show_grid_x,
-          showline = TRUE,
-          zeroline = FALSE,
-          ticks = "outside",
-          tickwidth = tick_width,
-          ticklen = tick_length,
-          tickmode = "array",
-          tickvals = x_ticks_pos,
-          ticktext = x_ticks_text,
-          range = as.list(extendrange(c(min_x_all, max_x_all)), 0.02)
-        ),
-        yaxis = list(
-          title = y_axis_label_panel,
-          tickfont = list(size = font_size),
-          titlefont = list(size = font_size),
-          showgrid = show_grid_y,
-          showline = TRUE,
-          zeroline = FALSE,
-          ticks = "outside",
-          tickwidth = tick_width,
-          ticklen = tick_length,
-          tickmode = "array",
-          tickvals = y_ticks_pos,
-          ticktext = y_ticks_text,
-          range = as.list(extendrange(c(min_y_all, max_y_all)), 0.02)
-        ),
-        legend = list(font = list(size = font_size)),
-        margin = list(t = 40)
-      )
-
-      if (count == 1 && need_color_bar) {
-        fig <- fig |> colorbar(
-          title = list(text = "[Ligand] (μM)", font = list(size = font_size - 1)),
-          tickvals = tickvals, # Ticks from max to min, rounded to two decimal places
-          ticktext = ticktext, # Use the same tick values as labels
-          tickfont = list(size = font_size - 2), # Font size of the ticks
-          len = 0.6, # Length of the color bar
-          outlinewidth = 0
+        fig <- fig |> layout(
+          xaxis = list(
+            title = x_axis_label_panel,
+            tickfont = list(size = font_size),
+            titlefont = list(size = font_size),
+            showgrid = show_grid_x,
+            showline = TRUE,
+            zeroline = FALSE,
+            ticks = "outside",
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = "array",
+            tickvals = x_ticks_pos,
+            ticktext = x_ticks_text,
+            range = as.list(extendrange(c(min_x_all, max_x_all)), 0.02)
+          ),
+          yaxis = list(
+            title = y_axis_label_panel,
+            tickfont = list(size = font_size),
+            titlefont = list(size = font_size),
+            showgrid = show_grid_y,
+            showline = TRUE,
+            zeroline = FALSE,
+            ticks = "outside",
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = "array",
+            tickvals = y_ticks_pos,
+            ticktext = y_ticks_text,
+            range = as.list(extendrange(c(min_y_all, max_y_all)), 0.02)
+          ),
+          legend = list(font = list(size = font_size)),
+          margin = list(t = 40)
         )
-      }
 
-      if (split_by_smax_id) {
-        fig_lst[[length(fig_lst) + 1]] <- fig
-        if (isTRUE(show_plot_title)) {
-          panel_titles <- c(panel_titles, plot_title)
+        if (count == 1 && need_color_bar) {
+          fig <- fig |> colorbar(
+            title = list(text = "[Ligand] (μM)", font = list(size = font_size - 1)),
+            tickvals = tickvals, # Ticks from max to min, rounded to two decimal places
+            ticktext = ticktext, # Use the same tick values as labels
+            tickfont = list(size = font_size - 2), # Font size of the ticks
+            len = 0.6, # Length of the color bar
+            outlinewidth = 0
+          )
+        }
+
+        if (split_by_smax_id) {
+          fig_lst[[length(fig_lst) + 1]] <- fig
+          if (isTRUE(show_plot_title)) {
+            panel_titles <- c(panel_titles, plot_title)
+          }
         }
       }
     }
 
-    if (!split_by_smax_id) {
+    if (!split_by_smax_id && !screen_mode) {
       fig_lst[[length(fig_lst) + 1]] <- fig
       if (isTRUE(show_plot_title)) {
         panel_titles <- c(panel_titles, plot_title)
       }
     }
+  }
+
+  if (screen_mode) {
+    x_ticks_info <- get_axis_ticks(min_x_all, max_x_all, n_ticks = x_nticks)
+    x_ticks_pos <- x_ticks_info$tickpos
+    x_ticks_text <- x_ticks_info$ticktext
+
+    y_ticks_info <- get_axis_ticks(min_y_all, max_y_all, n_ticks = y_nticks)
+    y_ticks_pos <- y_ticks_info$tickpos
+    y_ticks_text <- y_ticks_info$ticktext
+
+    fig_screen <- fig_screen |> layout(
+      xaxis = list(
+        title = x_axis_label,
+        tickfont = list(size = font_size),
+        titlefont = list(size = font_size),
+        showgrid = show_grid_x,
+        showline = TRUE,
+        zeroline = FALSE,
+        ticks = "outside",
+        tickwidth = tick_width,
+        ticklen = tick_length,
+        tickmode = "array",
+        tickvals = x_ticks_pos,
+        ticktext = x_ticks_text,
+        range = as.list(extendrange(c(min_x_all, max_x_all)), 0.02)
+      ),
+      yaxis = list(
+        title = y_axis_label,
+        tickfont = list(size = font_size),
+        titlefont = list(size = font_size),
+        showgrid = show_grid_y,
+        showline = TRUE,
+        zeroline = FALSE,
+        ticks = "outside",
+        tickwidth = tick_width,
+        ticklen = tick_length,
+        tickmode = "array",
+        tickvals = y_ticks_pos,
+        ticktext = y_ticks_text,
+        range = as.list(extendrange(c(min_y_all, max_y_all)), 0.02)
+      ),
+      legend = list(font = list(size = font_size)),
+      margin = list(t = 40)
+    )
+
+    fig_lst <- list(fig_screen)
+    panel_titles <- character(0)
   }
 
   title_text <- if (length(panel_titles) > 0) panel_titles[1] else "Kinetic traces"

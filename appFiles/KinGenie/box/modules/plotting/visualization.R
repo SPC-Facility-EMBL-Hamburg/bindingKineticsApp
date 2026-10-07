@@ -17,7 +17,11 @@ box::use(
     req,
     showModal,
     sliderInput,
+    span,
     tagList
+  ],
+  tippy[
+    tippy_this
   ]
 )
 
@@ -103,6 +107,22 @@ visualizationConfigServer <- function(id, state, plot_config) {
             column(
               width = 6,
               p(
+                HTML("<b>Screening mode</b>"),
+                span(icon("info-circle"), id = ns("info_visualization_screen_mode")),
+                checkboxInput(
+                  ns("visualization_screen_mode"), NULL,
+                  value = isTRUE(plot_config()$screen_mode)
+                ),
+                tippy_this(
+                  elementId = ns("info_visualization_screen_mode"),
+                  tooltip = "If selected, all curves will be plotted together and coloured by sample id, instead of concentration.",
+                  placement = "right"
+                )
+              )
+            ),
+            column(
+              width = 6,
+              p(
                 HTML("<b>Show plot title</b>"),
                 checkboxInput(
                   ns("visualization_show_plot_title"), NULL,
@@ -152,6 +172,12 @@ visualizationConfigServer <- function(id, state, plot_config) {
     observeEvent(input$visualization_split_by_smax, {
       cfg <- plot_config()
       cfg$split_by_smax <- isTRUE(input$visualization_split_by_smax)
+      plot_config(cfg)
+    })
+
+    observeEvent(input$visualization_screen_mode, {
+      cfg <- plot_config()
+      cfg$screen_mode <- isTRUE(input$visualization_screen_mode)
       plot_config(cfg)
     })
 
