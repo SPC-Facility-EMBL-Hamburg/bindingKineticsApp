@@ -344,11 +344,6 @@ fitResultsServer <- function(id, state, pyKinetics, plot_config_reac, logbook) {
       protein_conc_lst <- lapply(fittings, function(f) (f$unq_prot_conc))
       ligand_conc_per_pc_lst <- lapply(fittings, function(f) (f$lig_conc_per_protein))
 
-      print(k_obs_dominant_per_pc_lst)
-      print(k_obs_non_dominant_per_pc_lst)
-      print(protein_conc_lst)
-      print(ligand_conc_per_pc_lst)
-
       fig <- plot_many_relaxation_rates(
         k_obs_dominant_per_pc_lst,
         k_obs_non_dominant_per_pc_lst,

@@ -6,12 +6,19 @@ box::use(
   ],
   .. / .. / tables[
     get_plotting_df,
-    get_rtable_processing
+    get_rtable_processing,
+    get_sensor_df
+  ],
+  .. / .. / dialogs[
+    pop_up_info,
+    pop_up_warning
   ],
   reticulate[
     py_last_error
   ],
   rhandsontable[
+    hot_col,
+    hot_table,
     hot_to_r,
     renderRHandsontable,
     rhandsontable,
@@ -77,7 +84,8 @@ processingUI <- function(id) {
             c(
               "Subtract baseline" = "subtract",
               "Align association phase" = "align_association",
-              "Inter-step correction (dissociation)" = "correct_dissociation",
+              "Inter-step correction (shift association)" = "assoc_inter_step_correction",
+              "Inter-step correction (shift dissociation)" = "correct_dissociation",
               "Average" = "average",
               "Merge steps" = "merge_steps"
             ),
@@ -154,7 +162,8 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
         if (py_type %in% c("BLI_experiment", "Gator_experiment")) {
           choices <- c(
             "Align association phase" = "align_association",
-            "Inter-step correction (dissociation)" = "correct_dissociation"
+            "Inter-step correction (shift association)" = "assoc_inter_step_correction",
+            "Inter-step correction (shift dissociation)" = "correct_dissociation"
           )
 
           if (sel_exp != "All") {
@@ -269,10 +278,10 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
         ))
       }
 
-      if (operation %in% c("average", "align_association", "correct_dissociation")) {
+      if (operation %in% c("average", "align_association", "correct_dissociation","assoc_inter_step_correction")) {
         if (sel_exp != "All") {
           rdf <- get_rtable_processing(sensor_names)
-          print(rdf)
+          
           output$tableSelection <- renderRHandsontable({
             rdf
           })
@@ -284,16 +293,16 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
             experiment <- pyKinetics$experiments[[exp_name]]
             sensor_names <- experiment$sensor_names
 
-            df_temp <- get_sensor_df(sensor_names, exp_name)
+            df_temp  <- get_sensor_df(sensor_names, exp_name)
             dfs[[i]] <- df_temp
           }
 
           df <- do.call(rbind, dfs)
 
-          rdf <- rhandsontable(df) %>%
-            hot_col("Select") %>%
-            hot_table(stretchH = "all") %>%
-            hot_col("ID", readOnly = TRUE) %>%
+          rdf <- rhandsontable(df) |>
+            hot_col("Select") |>
+            hot_table(stretchH = "all") |>
+            hot_col("ID", readOnly = TRUE) |>
             hot_col("Experiment", readOnly = TRUE)
 
           output$tableSelection <- renderRHandsontable({
@@ -387,6 +396,32 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
         ))
       }
 
+      if (operation == "assoc_inter_step_correction") {
+        showModal(modalDialog(
+          tags$h3("Please select the curves:"),
+          tags$script(HTML(paste0("
+                    $(document).on('keypress', function(e) {
+                        if (e.which == 13) {
+                            e.preventDefault();
+                            $('#", ns("submitInterStepCorr"), "').click();
+                        }
+                    });
+                    "))),
+          rHandsontableOutput(ns("tableSelection")),
+          tags$h4(""),
+          sliderInput(ns("nPointsInterStepCorr"), "Number of points to use for correction:", min = 1, max = 20, value = 4),
+          checkboxInput(ns("inPlaceCorrection"), "Perform in-place inter-step correction", TRUE),
+          conditionalPanel(
+            condition = paste0("input['", ns("inPlaceCorrection"), "']"),
+            checkboxInput(ns("createNewSensorNames"), "Create new sensor names", FALSE),
+          ),
+          footer = tagList(
+            actionButton(ns("submitInterStepCorr"), "Submit"),
+            modalButton("Cancel")
+          )
+        ))
+      }
+
       if (operation == "merge_steps") {
         showModal(modalDialog(
           tags$h3("Please choose the mode for merging steps:"),
@@ -435,9 +470,34 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
 
       other_exp <- pyKinetics$experiments[[input$baselineExperiment]]
 
+      compatibility_check <- exp$find_experiments_compatibility(other_exp)
+
+      are_compatible    <- compatibility_check[[1]]
+      compatibility_status <- compatibility_check[[2]]
+
+      if (!are_compatible) {
+        pop_up_warning(
+          paste0("⚠ Experiments are not compatible because the time data is different")
+        )
+        req(FALSE)
+      }
+
+      # Check the type of compatibility
+      # We have two possible types of compatibility: "all" and "interaction"
+      # In the case of "all" the time data is exactly equal
+      # In the case of "interaction" the time data is the same, ignoring the start time, for the association and dissociation steps.
+      only_interaction <- compatibility_status != "all"
+
+      if (only_interaction) {
+        pop_up_info(
+          paste0("Experiments are only compatible for interaction (association and dissociation) steps 
+          because the start times are different.")
+        )
+      }
+
       result <- tryCatch(
         {
-          exp$subtract_experiment(other_exp, inplace = input$expSubtractionIsInPlace)
+          exp$subtract_experiment(other_exp, inplace = input$expSubtractionIsInPlace, only_interaction = only_interaction)
         },
         error = function(e) {
           if (inherits(e, "python.builtin.RuntimeError")) {
@@ -617,7 +677,64 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
       state$ligand_info_version <- state$ligand_info_version + 1
       # Include the correction step in the logbook
 
-      logbook$append("Inter-step correction performed (between dissociation and association).",
+      logbook$append("Inter-step correction performed (by shifting the dissociation phase).",
+        include_time = TRUE, add_empty_line = TRUE
+      )
+
+      logbook$append(paste0("Samples ", paste(samples, collapse = ", "), " corrected."))
+
+      # Append in-place option to the logbook
+      logbook$append(paste0("In-place correction:", input$inPlaceCorrection))
+
+      state$traces_loaded <- TRUE
+    })
+
+    observeEvent(input$submitInterStepCorr, {
+      removeModal()
+
+      tableCorrect <- hot_to_r(input$tableSelection)
+      tableCorrect <- tableCorrect[tableCorrect$Select, ]
+
+      state$traces_loaded <- FALSE
+
+      exps_to_analyse <- list()
+      sensor_to_correct <- list()
+
+      if (input$selectedExperiment == "All") {
+        unq_exps <- unique(tableCorrect$Experiment)
+
+        for (exp in unq_exps) {
+          temp_df <- tableCorrect[tableCorrect$Experiment == exp, ]
+          samples <- c(temp_df$ID)
+
+          exps_to_analyse[[length(exps_to_analyse) + 1]] <- exp
+          sensor_to_correct[[length(sensor_to_correct) + 1]] <- samples
+        }
+      } else {
+        exps_to_analyse[[1]] <- input$selectedExperiment
+        sensor_to_correct[[1]] <- c(tableCorrect$ID)
+      }
+
+      for (exp in exps_to_analyse) {
+        samples <- sensor_to_correct[[which(exps_to_analyse == exp)]]
+
+        py_exp <- pyKinetics$experiments[[exp]]
+
+        py_exp$assoc_inter_step_correction(
+          samples,
+          input$inPlaceCorrection,
+          input$createNewSensorNames,
+          input$nPointsCorrectDis
+        )
+      }
+
+      Sys.sleep(0.6)
+
+      state$legend_version <- state$legend_version + 1
+      state$ligand_info_version <- state$ligand_info_version + 1
+      # Include the correction step in the logbook
+
+      logbook$append("Inter-step correction performed (by shifting the association phase).",
         include_time = TRUE, add_empty_line = TRUE
       )
 

@@ -406,14 +406,34 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
         fittingRegion <- input$fittingRegion
         shared_smax <- input$linkedRmax
 
+        # ATTENTION: here n_good_fits and n_bad_fits are initialized to 0
+        # and represent only if the fitting algorithm finished
+        # it does not mean that the fitting result is trustworthy!!!
+
+        n_good_fits <- 0
+        n_bad_fits <- 0
+
         result <- tryCatch(
           {
-            pyKinetics$submit_kinetics_fitting(
+            kinetics_fit_results <- pyKinetics$submit_kinetics_fitting(
               fitting_model = fittingModel,
               fitting_region = fittingRegion,
               shared_smax = shared_smax,
               fit_sigma = input$fitSigmaTwoToOne
             )
+
+            good_fits <- kinetics_fit_results[[1]]
+            bad_fits  <- kinetics_fit_results[[2]]
+
+            n_good_fits <- n_good_fits + length(good_fits)
+            n_bad_fits <-  n_bad_fits + length(bad_fits)
+
+            if (n_bad_fits > 0 && n_good_fits > 0) {
+              pop_up_warning(
+                paste0("⚠ Some fits failed. Good fits: ", n_good_fits, ", Bad fits: ", n_bad_fits)
+              )
+            }
+
           },
           error = function(e) {
             if (inherits(e, "python.builtin.RuntimeError")) {
@@ -430,6 +450,12 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
 
         if (!is.null(result)) {
           req(FALSE)
+        }
+
+        if (n_bad_fits > 0 && n_good_fits == 0) {
+          pop_up_warning(
+            paste0("⚠ All fits failed. Please try with different preprocessing steps or experimental data.")
+          )
         }
 
         pop_up_success(
