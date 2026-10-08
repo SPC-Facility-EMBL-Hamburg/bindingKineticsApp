@@ -1,6 +1,6 @@
 # The KinGenie app
 
-Last time updated: July 2026
+Last time updated: October 2026
 
 ## Introduction
 
