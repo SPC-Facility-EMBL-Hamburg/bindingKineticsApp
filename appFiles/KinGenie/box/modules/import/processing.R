@@ -724,7 +724,7 @@ processingServer <- function(id, state, pyKinetics, legend_df, logbook) {
           samples,
           input$inPlaceCorrection,
           input$createNewSensorNames,
-          input$nPointsCorrectDis
+          input$nPointsInterStepCorr
         )
       }
 
