@@ -147,7 +147,15 @@
      </li>
 
      <li class="vf-list__item ">
-         Inter-step correction (dissociation):
+         Inter-step correction (<b>shift association</b>):
+         For each association step, KinGenie calculates the mean signal of the last n data points and the mean signal of
+         the first n points of the following step. 
+         The difference between these two means is then subtracted from the association step.  
+
+     </li>
+
+     <li class="vf-list__item ">
+         Inter-step correction (<b>shift dissociation</b>):
          For each dissociation step, KinGenie finds the previous association step and computes the mean of the last n points (from one to ten).
          Then, the difference between this value and the mean of the first n points (from one to ten) is subtracted from the dissociation step.
      </li>
