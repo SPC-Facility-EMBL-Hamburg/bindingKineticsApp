@@ -107,7 +107,7 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
                 ns("fittingModel"), NULL,
                 c(
                   "One-to-one" = "one_to_one",
-                  "One-to-one (MTL)" = "one_to_one_mtl",
+                  #"One-to-one (MTL)" = "one_to_one_mtl",
                   "One-to-one (induced fit)" = "one_to_one_if",
                   "Two-to-one" = "two_to_one",
                   "Heterogeneous ligand" = "heterogeneous_ligand"

@@ -119,7 +119,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
       if (model_type_sim == "surface") {
         updateSelectInput(session, "model_selected_sim", choices = c(
           "1:1" = "one_site",
-          "1:1 (mass transport limitation)" = "one_site_mtl",
+          #"1:1 (mass transport limitation)" = "one_site_mtl",
           "1:1 (induced fit)" = "one_site_induced_fit",
           "1:1 (conformational selection)" = "one_site_conformational_selection",
           "2:1 Heterogeneous analyte" = "heterogeneous_analyte",
