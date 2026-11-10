@@ -2,7 +2,7 @@
 
 # The KinGenie app
 
-Last time updated: October 2026
+Last time updated: November 2026
 
 ## Introduction
 
