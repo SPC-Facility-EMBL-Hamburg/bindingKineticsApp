@@ -24,6 +24,7 @@ box::use(
     fluidRow,
     HTML,
     icon,
+    modalButton,
     modalDialog,
     moduleServer,
     NS,

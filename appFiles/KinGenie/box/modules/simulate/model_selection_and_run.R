@@ -26,6 +26,7 @@ box::use(
     selectInput,
     span,
     tagList,
+    updateNumericInput,
     updateSelectInput
   ],
   shinydashboard[
@@ -207,6 +208,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
         sim_state$kc_sim_1to1_adv <- 1
         sim_state$krev_sim_1to1_adv <- 10
       }
+      # Keep the visible time step synchronized with model-specific defaults.
+      updateNumericInput(session, "time_step", value = sim_state$time_step)
     })
 
     observeEvent(input$btn_cal_simulation, {
@@ -215,8 +218,6 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
       model_type_sim <- input$model_type_sim
       model_selected_sim <- input$model_selected_sim
-
-      print_model_message(model_type_sim, model_selected_sim)
 
       # 0. Default number of cycles to one, it will change if we have single-cycle-kinetics
       numb_cycles <- 1
@@ -259,6 +260,9 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
           req(FALSE)
         }
       }
+
+      # Show the model information only after invalid inputs have been rejected.
+      print_model_message(model_type_sim, model_selected_sim)
 
       lig_concs <- init_lig_sim / (sim_state$lig_dil_factor_sim^(0:floor(sim_state$numb_dil_sim)))
 
