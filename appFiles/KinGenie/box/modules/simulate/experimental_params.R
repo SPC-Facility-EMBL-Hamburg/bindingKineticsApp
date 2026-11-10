@@ -1,4 +1,5 @@
 # AI-generated clarification: solution inputs are total concentrations at mixing.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   shiny[
     checkboxInput,
@@ -37,6 +38,7 @@ experimentalParamsUI <- function(id) {
 #' @export
 experimentalParamsServer <- function(id, sim_state) {
   # AI-generated: distinguish conserved total concentrations from free concentrations.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 

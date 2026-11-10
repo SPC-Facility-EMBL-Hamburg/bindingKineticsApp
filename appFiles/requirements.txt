@@ -6,4 +6,5 @@ plotly
 kaleido
 matplotlib
 # AI-generated dependency update: latest published pyKinGenie release.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 pykingenie==1.0.19

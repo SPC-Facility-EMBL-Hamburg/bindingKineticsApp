@@ -1,4 +1,5 @@
 # AI-generated app integration tests: check solution input forwarding, result data and validation.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   ../../box/modules/simulate/model_selection_and_run[modelSelectionAndRunServer]
 )
@@ -6,9 +7,11 @@ box::use(
 for (solution_model in c("one_site", "one_site_induced_fit", "one_site_conformational_selection")) {
   local({
     # AI-generated: give each test a stable model value without patching dependencies.
+    # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
     model <- solution_model
     testthat::test_that(paste(model, "forwards simulation inputs and supplies plot data"), {
       # AI-generated: run real panel callbacks with multiple concentrations and unequal species signals.
+      # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
       state <- shiny::reactiveValues()
       results <- shiny::reactiveValues()
       shiny::testServer(modelSelectionAndRunServer,

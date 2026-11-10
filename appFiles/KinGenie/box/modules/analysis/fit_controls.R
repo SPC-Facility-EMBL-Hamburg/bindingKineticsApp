@@ -1,4 +1,5 @@
 # AI-generated corrections: clarify solution fitting inputs and reset model-specific result state.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   .. / .. / busy_indicator[
     withBusyIndicatorServer,
@@ -65,11 +66,13 @@ fitControlsUI <- function(id) {
 #' @export
 fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
   # AI-generated: keep solution signal selections and result state consistent with the fitted model.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     validate_solution_concentrations <- function() {
       # AI-generated: validate the actual fitting objects, including after the table is hidden.
+      # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
       concentrations <- unlist(c(
         pyKinetics$get_experiment_properties("prot_conc", fittings = TRUE),
         pyKinetics$get_experiment_properties("lig_conc", fittings = TRUE)

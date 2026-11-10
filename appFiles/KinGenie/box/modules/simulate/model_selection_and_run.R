@@ -1,4 +1,5 @@
 # AI-generated corrections align surface and solution simulations with pyKinGenie 1.0.19.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   . / export[
     simResultsExportUI
@@ -111,6 +112,7 @@ modelSelectionAndRunUI <- function(id) {
 #' @export
 modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
   # AI-generated correction: map model parameters explicitly and retain solution relaxation rates.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -173,6 +175,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
           sim_state$kon_sim_1to1_adv <- 100
           sim_state$koff_sim_1to1_adv <- 100
           # AI-generated correction: paper k_r is forward (k_c), k_e is reverse (k_rev).
+          # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
           sim_state$kc_sim_1to1_adv <- 10
           sim_state$krev_sim_1to1_adv <- 1
           sim_state$protein_conc_sim <- 0.5
@@ -226,6 +229,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
       }
 
       # AI-generated: validate solution inputs before constructing dilution/time grids.
+      # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
       if (model_type_sim == "solution") {
         concentrations <- c(init_lig_sim, sim_state$protein_conc_sim)
         positive <- c(sim_state$lig_dil_factor_sim, sim_state$prot_dil_factor_sim,

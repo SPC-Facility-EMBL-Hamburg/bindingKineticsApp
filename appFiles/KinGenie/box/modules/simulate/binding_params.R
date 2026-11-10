@@ -1,4 +1,5 @@
 # AI-generated correction: clarify mass-transport and solution signal coefficient units.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   shiny[
     column,
@@ -39,6 +40,7 @@ bindingParamsUI <- function(id) {
 #' @export
 bindingParamsServer <- function(id, sim_state) {
   # AI-generated correction: display Ktr and species signal coefficient units used by the solvers.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 

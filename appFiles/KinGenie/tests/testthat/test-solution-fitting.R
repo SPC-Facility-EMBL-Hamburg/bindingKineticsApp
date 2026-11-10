@@ -1,4 +1,5 @@
 # AI-generated integration tests for solution fitting against pyKinGenie, without patched dependencies.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   ../../box/modules/analysis/fit_controls[fitControlsServer],
   ../../box/modules/global_logbook[logbookServer]
@@ -6,8 +7,10 @@ box::use(
 
 solutionFittingTestServer <- function(id, state, pyKinetics) {
   # AI-generated: compose actual fitting and logging modules in a real Shiny session.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   shiny::moduleServer(id, function(input, output, session) {
     # AI-generated: supply the normal application module dependencies.
+    # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
     logbook <- logbookServer("logbook")
     fitControlsServer("fit", state, shiny::reactive(data.frame()), pyKinetics, logbook)
   })
@@ -16,9 +19,11 @@ solutionFittingTestServer <- function(id, state, pyKinetics) {
 for (solution_model in c("one_binding_site", "one_binding_site_if")) {
   local({
     # AI-generated: keep each regression's model fixed.
+    # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
     model <- solution_model
     testthat::test_that(paste(model, "forwards signal choices and clears exponential result state"), {
       # AI-generated: check UI parameter forwarding with six traces covering early and late dynamics.
+      # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
       py <- reticulate::import("pykingenie")
       analyzer <- reticulate::import("pykingenie.main")$KineticsAnalyzer()
       times <- c(0, exp(seq(log(0.001), log(8), length.out = 60)))
@@ -26,6 +31,7 @@ for (solution_model in c("one_binding_site", "one_binding_site_if")) {
       ligands <- rep(c(0.3, 0.9, 2.7), 2)
       signals <- lapply(seq_along(proteins), function(i) {
         # AI-generated: create input traces for the app workflow using the package as supplied.
+        # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
         if (model == "one_binding_site") {
           py$signal_ode_one_site_insolution(reticulate::np_array(times), 1, 1.3,
             proteins[i], ligands[i], signal_a = 0.2, signal_b = 0.4, signal_complex = 1.7)

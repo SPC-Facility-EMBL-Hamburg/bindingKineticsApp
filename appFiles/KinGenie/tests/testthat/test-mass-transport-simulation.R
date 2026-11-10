@@ -1,10 +1,12 @@
 # AI-generated integration tests for the mass-transport simulation API.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   ../../box/modules/simulate/model_selection_and_run[modelSelectionAndRunServer]
 )
 
 check_mass_transport_simulation <- function(single_cycle) {
   # AI-generated: run the real Shiny module with the installed Python solvers.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   pykingenie <- reticulate::import("pykingenie")
   sim_state <- shiny::reactiveValues()
   sim_results <- shiny::reactiveValues()
@@ -14,6 +16,7 @@ check_mass_transport_simulation <- function(single_cycle) {
     args = list(sim_state = sim_state, sim_results = sim_results, pykingenie = pykingenie),
     {
       # AI-generated: exercise initial and repeated-cycle calls without replacing dependencies.
+      # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
       session$setInputs(
         model_type_sim = "surface",
         model_selected_sim = "one_site_mtl",
@@ -78,10 +81,12 @@ check_mass_transport_simulation <- function(single_cycle) {
 
 testthat::test_that("mass-transport simulation supports multiple concentrations and capacities", {
   # AI-generated regression for the multi-cycle simulation panel.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   check_mass_transport_simulation(FALSE)
 })
 
 testthat::test_that("mass-transport single-cycle simulation carries signal between injections", {
   # AI-generated regression for the later association/dissociation call sites.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   check_mass_transport_simulation(TRUE)
 })

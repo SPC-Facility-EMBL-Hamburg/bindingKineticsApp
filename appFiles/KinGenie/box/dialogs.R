@@ -1,4 +1,5 @@
 # AI-generated correction distinguishes physical and signal-scaled transport rates.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   shinyalert[
     shinyalert
@@ -56,6 +57,7 @@ pop_up_success <- function(string, size = "m") {
 #' @export
 print_model_message <- function(model_type_sim, model_selected_sim) {
   # AI-generated correction: explain the mass-transport parameter's signal units.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   c1 <- model_type_sim == "surface"
 
   model_typ_text <- ifelse(c1, "a surface-based binding model
