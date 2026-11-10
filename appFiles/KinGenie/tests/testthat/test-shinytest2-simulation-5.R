@@ -167,6 +167,7 @@ test_that("KinGenie solution simulation and download workflow", {
   )
   wait_for_idle()
 
+  # Four concentrations avoid a midpoint tie between adjacent palette entries.
   set_input(list("modelSelectionAndRun-model_type_sim" = "solution"))
   wait_for_idle()
 
@@ -176,7 +177,7 @@ test_that("KinGenie solution simulation and download workflow", {
     "modelSelectionAndRun-time_step" = 0.05,
     "experimentalParams-total_time" = 3,
     "experimentalParams-init_lig_sim_solution" = 2.4,
-    "experimentalParams-numb_dil_sim" = 2,
+    "experimentalParams-numb_dil_sim" = 3,
     "experimentalParams-lig_dil_factor_sim" = 2,
     "experimentalParams-protein_conc_sim" = 0.8,
     "experimentalParams-numb_dil_sim_prot" = 1,
@@ -203,7 +204,7 @@ test_that("KinGenie solution simulation and download workflow", {
     "modelSelectionAndRun-time_step" = 0.05,
     "experimentalParams-total_time" = 3,
     "experimentalParams-init_lig_sim_solution" = 2.4,
-    "experimentalParams-numb_dil_sim" = 2,
+    "experimentalParams-numb_dil_sim" = 3,
     "experimentalParams-lig_dil_factor_sim" = 2,
     "experimentalParams-protein_conc_sim" = 0.8,
     "experimentalParams-numb_dil_sim_prot" = 1,
@@ -251,7 +252,7 @@ test_that("KinGenie solution simulation and download workflow", {
     "modelSelectionAndRun-time_step" = 0.05,
     "experimentalParams-total_time" = 3,
     "experimentalParams-init_lig_sim_solution" = 2.4,
-    "experimentalParams-numb_dil_sim" = 2,
+    "experimentalParams-numb_dil_sim" = 3,
     "experimentalParams-lig_dil_factor_sim" = 2,
     "experimentalParams-protein_conc_sim" = 0.8,
     "experimentalParams-numb_dil_sim_prot" = 1,

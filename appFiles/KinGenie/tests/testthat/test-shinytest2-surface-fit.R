@@ -1,9 +1,13 @@
+# AI-generated CI synchronization fixes.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 library(shinytest2)
 library(testthat)
 
 TIMEOUT <- 60000
 
 test_that("KinGenie load example and fit workflow", {
+  # AI-generated changes synchronize the alignment table before submission.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   app <- AppDriver$new(
     test_path("../.."),
     variant = "ci", name = "KinGenie-surface-fit",
@@ -11,6 +15,8 @@ test_that("KinGenie load example and fit workflow", {
     load_timeout = 20000
   )
   
+  on.exit(app$stop(), add = TRUE)
+
   accept_modal <- function() {
     app$wait_for_js("document.querySelector('.confirm') !== null")
     app$run_js("document.querySelector('.confirm').click()")
@@ -57,11 +63,20 @@ test_that("KinGenie load example and fit workflow", {
   }
 
   wait_plot_input_update <- function() {
-    app$wait_for_js("
-      const el = document.getElementById('plotInput-traces');
-      el && !el.classList.contains('recalculating');
-    ", timeout = TIMEOUT)
-    wait_for_idle()
+    # AI-generated: retain browser/server diagnostics if plot rendering fails in CI.
+    # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
+    tryCatch({
+      app$wait_for_js("
+        const el = document.getElementById('plotInput-traces');
+        el && !el.classList.contains('recalculating');
+      ", timeout = TIMEOUT)
+      wait_for_idle()
+    }, error = function(error) {
+      # AI-generated: report the underlying app error before releasing its browser.
+      # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
+      print(app$get_logs())
+      stop(error)
+    })
   }
 
 
@@ -172,6 +187,11 @@ test_that("KinGenie load example and fit workflow", {
     "processing-keepQuenching" = FALSE,
     "processing-keepCustom" = FALSE
   ))
+  # Wait until the alignment table has sent its selection.
+  app$wait_for_js("
+    const table = Shiny.shinyapp.$inputValues['processing-tableSelection'];
+    table && Array.isArray(table.data) && table.data.length > 0;
+  ", timeout = TIMEOUT)
   click("processing-submitAlign")
   wait_plot_input_update()
   set_input(list("processing-operation" = "correct_dissociation"))
