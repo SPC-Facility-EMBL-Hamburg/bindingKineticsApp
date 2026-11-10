@@ -664,7 +664,7 @@ where *C* is the analyte concentration and *K*D is the intrinsic equilibrium dis
 
 The one-to-one (steady-state) and one-to-one (kinetics) signal is calculated using an analytical equation, while for the mass-transport-limitation and heterogeneous analyte models we solve the ODE using the *solve\_ivp* function from *scipy*, that numerically integrates a system of ordinary differential equations given a set of initial conditions. Last, for the induced-fit and conformational-selection models, the ODEs are solved using the matrix exponential method.
 
-Models available for fitting use non-linear least squares through `scipy.optimize.curve_fit`, with bounds on the fitted parameters. Some routines expand the bounds and refit automatically. Inspect any final estimate that remains at a boundary before interpreting it.
+Models available for fitting use non-linear least squares through `scipy.optimize.curve_fit`, with bounds on the fitted parameters. Some routines expand the bounds and refit automatically. Inspect the fitted parameters bounds before trusting results.
 
 The standard deviation of all fitted parameters is then computed using the square root of diagonal values from the fit parameter covariance matrix reported by *scipy.curve\_fit* function. These are approximate standard errors based on a local linear approximation around the optimum, not guaranteed underestimates of the uncertainty. They can be unreliable when the model is poorly identifiable, parameters are near bounds, or the error assumptions are inappropriate.[^2] Relative errors are calculated as $100*(std(\ \widehat{\theta })\ /\ \widehat{\theta })$ where $\widehat{θ}$ refers to the estimate of the parameter and $std(\ \widehat{\theta })$ to the standard deviation.
 
@@ -676,7 +676,7 @@ RSS({K}_{d})=RS{S}_{0}(1+\frac{criticalValue}{n-p}) \tag{64}
 $$
 
 
-where *RSS*0 is the residual sum of squares using the best estimates for all the parameters, *RSS(K*d*)* is the residual sum of squares using a fixed value of *K*d (fitting again the other parameters),  *n* is the number of data points, *p* is the number of parameters,  and *criticalValue* is the 95th percentile of the Fisher–Snedecor distribution with **1 numerator degree of freedom and $n-p$ denominator degrees of freedom**, $F_{0.95}(1,n-p)$.[^3]
+where *RSS*0 is the residual sum of squares using the best estimates for all the parameters, *RSS(K*d*)* is the residual sum of squares using a fixed value of *K*d (fitting again the other parameters),  *n* is the number of data points, *p* is the number of parameters,  and *criticalValue* is the 95th percentile of the Fisher–Snedecor distribution with **1 numerator degree of freedom and $n-p$ denominator degrees of freedom**, $F_{0.95}(1,n-p)$.
 
 **General note:**
 
@@ -688,7 +688,7 @@ In the kinetics models, the *S*max parameter can be fitted globally within a cap
 
 | Term | Definition |
 | :--- | :--- |
-| Analyte | Biomolecule supplied in solution at a prescribed concentration during a surface-based association step |
+| Analyte | Biomolecule supplied in solution at a constant concentration during a surface-based association step |
 | Association phase | Phase of a surface-based experiment where the concentration of the analyte is kept constant and flows over the surface |
 | Baseline | Phase of a surface-based experiment where the biosensors measure the signal of the buffer. A baseline before the association step is needed for baseline-based alignment; already aligned or simulated traces can be imported without it. |
 | Biosensor | Disposable reactive surface used to immobilize the ligand and detect binding |
@@ -984,4 +984,3 @@ For further assistance, please contact us:
 [^1]:  Svitel, J., Boukari, H., Van Ryk, D., Willson, R. C., & Schuck, P. (2007). Probing the functional heterogeneity of surface binding sites by analysis of experimental binding traces and the effect of mass transport limitation. *Biophysical Journal*, *92*(5), 1742–1758. [doi:10.1529/biophysj.106.094615](https://doi.org/10.1529/biophysj.106.094615).
 
 [^2]: SciPy, [`scipy.optimize.curve_fit`](https://docs.scipy.org/doc/scipy-1.15.2/reference/generated/scipy.optimize.curve_fit.html), especially the covariance and parameter-uncertainty notes.
-[^3]: SciPy, [`scipy.stats.f`](https://docs.scipy.org/doc/scipy-1.15.2/reference/generated/scipy.stats.f.html); the F-distribution arguments are numerator degrees of freedom followed by denominator degrees of freedom.
