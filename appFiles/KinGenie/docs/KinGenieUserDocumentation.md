@@ -291,7 +291,7 @@ k_{tr,S}=\alpha k_{tr,c} \tag{19}
 $$
 
 
-Here $[A]_0$ is the prescribed bulk analyte concentration, not a finite total pool that is depleted by binding. The conversion factor $\alpha$ relates bound concentration to measured signal, $S=\alpha[LA]$. The fitted transport coefficient $k_{tr,S}$ therefore has units of signal per µM per second and scales with the chosen signal units. The interface and pyKinGenie report this lumped coefficient as *k*tr; it must not be interpreted directly as the physical rate $k_{tr,c}$.
+Here $[A]_0$ is the bulk analyte concentration, not depleted by binding. The conversion factor $\alpha$ relates bound concentration to measured signal, $S=\alpha[LA]$. The fitted transport coefficient $k_{tr,S}$ therefore has units of signal per µM per second and scales with the chosen signal units. The interface and pyKinGenie report this lumped coefficient as *k*tr; it must not be interpreted directly as the physical rate $k_{tr,c}$.
 
 Overall, there are four variables to be fitted: *k*off, *K*d, *k*tr and *S*max.
 
