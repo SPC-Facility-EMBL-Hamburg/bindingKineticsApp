@@ -1,3 +1,4 @@
+# AI-generated correction: show the signal-scaled mass-transport coefficient units.
 box::use(
   shiny[
     column,
@@ -37,6 +38,7 @@ bindingParamsUI <- function(id) {
 
 #' @export
 bindingParamsServer <- function(id, sim_state) {
+  # AI-generated correction: Ktr is measured in signal/(micromolar second).
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -73,7 +75,7 @@ bindingParamsServer <- function(id, sim_state) {
               column(
                 2,
                 p(
-                  HTML("<b>K<sub>tr</sub> [1/s]</b>"),
+                  HTML("<b>K<sub>tr</sub> [A.U./(μM·s)]</b>"),
                   numericInput(ns("ktr_sim_1to1"), NULL, 0.005, min = 0, max = 1e8)
                 )
               )

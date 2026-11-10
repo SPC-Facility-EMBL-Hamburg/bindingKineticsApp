@@ -1,3 +1,4 @@
+# AI-generated corrections align mass-transport simulation calls with pyKinGenie 1.0.19.
 box::use(
   . / export[
     simResultsExportUI
@@ -109,6 +110,7 @@ modelSelectionAndRunUI <- function(id) {
 
 #' @export
 modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
+  # AI-generated correction: use the signal-only mass-transport API in every cycle.
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -119,7 +121,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
       if (model_type_sim == "surface") {
         updateSelectInput(session, "model_selected_sim", choices = c(
           "1:1" = "one_site",
-          #"1:1 (mass transport limitation)" = "one_site_mtl",
+          "1:1 (mass transport limitation)" = "one_site_mtl",
           "1:1 (induced fit)" = "one_site_induced_fit",
           "1:1 (conformational selection)" = "one_site_conformational_selection",
           "2:1 Heterogeneous analyte" = "heterogeneous_analyte",
@@ -380,8 +382,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
             if (model_selected_sim == "one_site_mtl") {
               signal <- pykingenie$solve_ode_one_site_mass_transport_association(
-                np_association_time,
-                0, lc / 2, lc, Kd, k_off, k_tr, smax
+                t = np_association_time, s1_0 = 0, analyte_conc = lc,
+                K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
               )
             }
 
@@ -475,7 +477,10 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
             }
 
             if (model_selected_sim == "one_site_mtl") {
-              signal <- pykingenie$solve_ode_one_site_mass_transport_dissociation(np_dissociation_time, s0, Kd, k_off, k_tr, smax)
+              signal <- pykingenie$solve_ode_one_site_mass_transport_dissociation(
+                t = np_dissociation_time, s1_0 = s0,
+                K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
+              )
             }
 
             if (model_selected_sim == "heterogeneous_ligand") {
@@ -660,7 +665,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
                 if (model_selected_sim == "one_site_mtl") {
                   signal <- pykingenie$solve_ode_one_site_mass_transport_association(
-                    np_association_time, last_signal, lc / 2, lc, Kd, k_off, k_tr, smax
+                    t = np_association_time, s1_0 = last_signal, analyte_conc = lc,
+                    K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
                   )
                 }
 
@@ -789,7 +795,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
                 if (model_selected_sim == "one_site_mtl") {
                   signal <- pykingenie$solve_ode_one_site_mass_transport_dissociation(
-                    np_dissociation_time, s0, Kd, k_off, k_tr, smax
+                    t = np_dissociation_time, s1_0 = s0,
+                    K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
                   )
                 }
 

@@ -5,4 +5,5 @@ scipy
 plotly
 kaleido
 matplotlib
-pykingenie
+# AI-generated dependency update: latest published pyKinGenie release.
+pykingenie==1.0.19
