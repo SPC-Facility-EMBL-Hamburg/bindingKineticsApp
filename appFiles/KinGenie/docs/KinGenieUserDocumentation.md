@@ -1,13 +1,15 @@
 <!-- This file contains AI-generated corrections to the user-provided documentation. -->
 
-**eSPC, an Online Data Analysis Platform for Molecular Biophysics**
+<div style="text-align: center; padding-top: 3rem; page-break-after: always; break-after: page;">
 
-**KinGenie 1.0**
-**User Documentation**
+<h1 style="font-size: 2rem; line-height: 1.25; font-weight: 700;">eSPC, an Online Data Analysis Platform for Molecular Biophysics</h1>
 
-This Markdown guide is maintained in the bindingKineticsApp repository. Model descriptions distinguish the Shiny interface from the underlying pyKinGenie library.
+<h2 style="font-size: 1.5rem; line-height: 1.5; color: #007a53; font-weight: 700;">KinGenie 1.0<br>User Documentation</h2>
 
-November 2026
+<p style="font-size: 1.25rem;">November 2026</p>
+<br>
+
+</div>
 
 ## Table of contents
 
@@ -74,7 +76,7 @@ For multi-cycle kinetics, the CSV file should have the following columns:
 
 * *Time*: time data in seconds
 * *Signal*: signal values at each time point
-* *Smax*: numeric maximum-response value in signal units, as exported by the Simulation panel; it is not the dataset's `Smax_ID`
+* *Smax*: Integer, identifies a certain measurement.
 * *Analyte\_concentration\_micromolar\_constant*: analyte concentration in micromolar units
 
 
@@ -82,7 +84,7 @@ For single-cycle kinetics, the CSV file should have one extra column:
 
 * Cycle: cycle number for single cycle kinetics
 
-**Note:** CSV example files can be exported from the Simulation panel. In the current surface CSV importer, only rows with the first distinct `Smax` value are loaded; use a single `Smax` value per input file. Set parameter-sharing groups using `Smax_ID` in the analysis dataset. Include dissociation rows with zero analyte concentration, and keep the association and dissociation rows for each trace or cycle together.
+**Note:** CSV example files can be exported from the Simulation panel. In the current surface CSV importer, only rows with the first distinct `Smax` value are loaded; use a single `Smax` value per input file.
 
 <a id="surface-processing"></a>
 
@@ -137,7 +139,7 @@ If the association phase has reached equilibrium, the equilibrium signal versus 
 
 ### 1.2.3. Models
 
-In the models below, **L refers to the immobilized molecule (ligand)**, and **A to the analyte** supplied in solution. Except in the explicit mass-transport description, surface association assumes a constant analyte concentration at the binding sites; the supplied analyte concentration is zero during dissociation. The species equations below show the chemical reaction contributions to free analyte; reservoir supply maintains its prescribed concentration in the surface simulations and fits.
+In the models below, **L refers to the immobilized molecule (ligand)**, and **A to the analyte** in solution. Except in the explicit mass-transport description, surface association assumes a constant analyte concentration at the binding sites; the analyte concentration is zero during dissociation.
 
 <a id="surface-one-site-kinetics"></a>
 
@@ -606,7 +608,8 @@ $$
 
 where ${S}_{max,LA}$ is the maximum signal produced by the single-bound complex and ${S}_{max,L{A}_{2}}$ is the signal produced by the double-bound complex.
 
-**Note:** The two sites have the same intrinsic binding rates before occupancy is considered, and the statistical factors account for the number of available or occupied sites. The cooperativity factor modifies the second binding step. The software allows the singly and doubly bound states to have separately specified or fitted response amplitudes.
+**Note:** The two sites have the same intrinsic binding rates before occupancy is considered, and the statistical factors account for the number of available or occupied sites. The cooperativity factor modifies the second binding step. KinGenie uses different
+signal amplitudes for the singly and doubly bound states.
 
 <a id="surface-two-site-equilibrium"></a>
 
@@ -690,13 +693,13 @@ In the kinetics models, the *S*max parameter can be fitted globally within a cap
 | Baseline | Phase of a surface-based experiment where the biosensors measure the signal of the buffer. A baseline before the association step is needed for baseline-based alignment; already aligned or simulated traces can be imported without it. |
 | Biosensor | Disposable reactive surface used to immobilize the ligand and detect binding |
 | Dissociation phase | Phase of a surface-based experiment where the concentration of the analyte is dropped to zero and the signal diminishes due to the dissociation of the complex. It comes immediately after the association phase |
-| Double-reference | Method of background correction where, for each biosensor, the signal of the reference sensor is subtracted together with the signal of a sensor without immobilized ligand and with analyte to correct for non-specific binding to the surface |
+| Double-reference | Reference-surface subtraction followed by subtraction of a blank injection that has undergone the same reference-surface correction |
 | *K*d | Equilibrium dissociation constant ($K_d=k_{off}/k_{on}$ for a one-step binding interaction)  |
 | *k*off | Rate of dissociation of the complex in the reaction: $PL\ \rightarrow \ P+L$ |
 | *k*on | Rate of formation of the complex in the reaction: $P\ +\ L\ \rightarrow \ PL$ |
 | Ligand | In a surface-based experiment, the ligand refers to the biomolecule that is fixed to the surface, and is usually a protein. On the other hand, in a solution-based experiment, the ligand moves freely in solution and could be a small molecule  |
 | Loading | Phase of a surface-based experiment where the ligand is flown at a fixed concentration to immobilize it  |
-| Reference sensor | Sensor with ligand and without analyte used to correct for buffer background and instrument drift |
+| Reference sensor | Sensor without immobilized active ligand (or with a non-binding control), exposed to the same analyte concentration to correct for background and non-specific binding |
 | *S*max | Maximum theoretical binding capacity of the sensor. Depends on the amount of loading and is usually unique for a given sensor and experiment |
 | Steady-state | Condition of a chemical reaction where all state variables remain constant, such as the concentration of the biomolecules. |
 
