@@ -251,7 +251,7 @@ L+{A}_{surface}\ ⇌\ LA \tag{13}
 $$
 
 
-Using the reservoir approximation, the concentration of *A*bulk remains constant.
+Using the reservoir approximation, the concentration of $A_{\mathrm{bulk}}$ remains constant.
 
 The differential equations for each species concentration are:
 
