@@ -1,4 +1,4 @@
-# AI-generated correction: show the signal-scaled mass-transport coefficient units.
+# AI-generated correction: clarify mass-transport and solution signal coefficient units.
 box::use(
   shiny[
     column,
@@ -38,7 +38,7 @@ bindingParamsUI <- function(id) {
 
 #' @export
 bindingParamsServer <- function(id, sim_state) {
-  # AI-generated correction: Ktr is measured in signal/(micromolar second).
+  # AI-generated correction: display Ktr and species signal coefficient units used by the solvers.
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -228,45 +228,51 @@ bindingParamsServer <- function(id, sim_state) {
         ## --------------------------------------------------
 
         if (type == "solution") {
-          fluidRow(
-            column(2, p(
-              HTML("<b>Free protein signal</b>"),
-              numericInput(ns("signal_E"), NULL, 0)
-            )),
-            column(2, p(
-              HTML("<b>Free ligand signal</b>"),
-              numericInput(ns("signal_S"), NULL, 0)
-            )),
-            if (model %in% c(
-              "one_site",
-              "one_site_conformational_selection"
-            )) {
-              column(
-                2,
-                p(
-                  HTML("<b>Complex signal</b>"),
-                  numericInput(ns("signal_ES_simple"), NULL, 1)
-                )
-              )
-            },
-            if (model == "one_site_induced_fit") {
-              tagList(
+          tagList(
+            p("Signal = sum of each species concentration times its signal coefficient.",
+              if (model == "one_site_conformational_selection") {
+                "Both free protein conformations use the free protein coefficient."
+              }),
+            fluidRow(
+              column(2, p(
+                HTML("<b>Free protein signal [A.U./μM]</b>"),
+                numericInput(ns("signal_E"), NULL, 0)
+              )),
+              column(2, p(
+                HTML("<b>Free ligand signal [A.U./μM]</b>"),
+                numericInput(ns("signal_S"), NULL, 0)
+              )),
+              if (model %in% c(
+                "one_site",
+                "one_site_conformational_selection"
+              )) {
                 column(
                   2,
                   p(
-                    HTML("<b>Intermediate complex signal</b>"),
-                    numericInput(ns("signal_ES_int"), NULL, 1)
-                  )
-                ),
-                column(
-                  2,
-                  p(
-                    HTML("<b>Induced complex signal</b>"),
-                    numericInput(ns("signal_ES"), NULL, 1)
+                    HTML("<b>Complex signal [A.U./μM]</b>"),
+                    numericInput(ns("signal_ES_simple"), NULL, 1)
                   )
                 )
-              )
-            }
+              },
+              if (model == "one_site_induced_fit") {
+                tagList(
+                  column(
+                    2,
+                    p(
+                      HTML("<b>Intermediate complex signal [A.U./μM]</b>"),
+                      numericInput(ns("signal_ES_int"), NULL, 1)
+                    )
+                  ),
+                  column(
+                    2,
+                    p(
+                      HTML("<b>Induced complex signal [A.U./μM]</b>"),
+                      numericInput(ns("signal_ES"), NULL, 1)
+                    )
+                  )
+                )
+              }
+            )
           )
         }
       )

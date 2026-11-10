@@ -1,3 +1,4 @@
+# AI-generated corrections: clarify solution fitting inputs and reset model-specific result state.
 box::use(
   .. / .. / busy_indicator[
     withBusyIndicatorServer,
@@ -63,8 +64,22 @@ fitControlsUI <- function(id) {
 
 #' @export
 fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
+  # AI-generated: keep solution signal selections and result state consistent with the fitted model.
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    validate_solution_concentrations <- function() {
+      # AI-generated: validate the actual fitting objects, including after the table is hidden.
+      concentrations <- unlist(c(
+        pyKinetics$get_experiment_properties("prot_conc", fittings = TRUE),
+        pyKinetics$get_experiment_properties("lig_conc", fittings = TRUE)
+      ))
+      if (!length(concentrations) || any(!is.finite(concentrations) | concentrations <= 0)) {
+        pop_up_warning("Binding-model fits require positive, finite total protein and ligand concentrations in μM.
+          Correct the dataset information and create the dataset again.")
+        req(FALSE)
+      }
+    }
 
     output$fitting_box <- renderUI({
       req(state$traces_loaded)
@@ -555,6 +570,9 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
       state$kinetics_fit_done <- FALSE
 
       model <- input$modelSelectionSolution
+      if (model %in% c("one_binding_site", "one_binding_site_if")) {
+        validate_solution_concentrations()
+      }
 
       logbook$append("Fitting triggered", include_time = TRUE, add_empty_line = TRUE)
       # append model selection to the logbook
@@ -568,7 +586,10 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
         # Each of them is a checkboxInput
 
         showModal(modalDialog(
-          tags$h3("Please select the species producing the signal:"),
+          tags$h3("Select the species signal coefficients to fit:"),
+          p("Coefficients are fitted in signal units per μM and are nonnegative.",
+            "Unchecked species contribute zero signal. Total protein and ligand concentrations",
+            "after mixing must be positive and supplied in μM. The initial complex concentration is zero."),
           tags$script(HTML(paste0("
                     $(document).on('keypress', function(e) {
                         if(e.which == 13) {
@@ -579,9 +600,9 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
                     "))),
           checkboxInput(ns("fit_signal_E"), "Free protein", FALSE),
           checkboxInput(ns("fit_signal_S"), "Free ligand", FALSE),
-          checkboxInput(ns("fit_signal_ES"), "Complex", TRUE),
-          tags$h4("Please select if the signal produced by the induced complex equals the signal produced by the intermediate complex:"),
-          checkboxInput(ns("ESint_equals_ES"), "Signal(ES) = Signal(ES_intermediate)", TRUE),
+          checkboxInput(ns("fit_signal_ES"), "Bound complexes (ES and ES_intermediate)", TRUE),
+          tags$h4("Select whether the induced and intermediate complexes share a signal coefficient:"),
+          checkboxInput(ns("ESint_equals_ES"), "Same signal coefficient for ES and ES_intermediate", TRUE),
           footer = tagList(
             actionButton(ns("submitIF"), "Submit"),
             modalButton("Cancel")
@@ -599,7 +620,10 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
         # Each of them is a checkboxInput
 
         showModal(modalDialog(
-          tags$h3("Please select the species producing the signal:"),
+          tags$h3("Select the species signal coefficients to fit:"),
+          p("Coefficients are fitted in signal units per μM and are nonnegative.",
+            "Unchecked species contribute zero signal. Total protein and ligand concentrations",
+            "after mixing must be positive and supplied in μM. The initial complex concentration is zero."),
           tags$script(HTML(paste0("
                     $(document).on('keypress', function(e) {
                         if(e.which == 13) {
@@ -610,8 +634,9 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
                     "))),
           checkboxInput(ns("fit_signal_E"), "Free protein", FALSE),
           checkboxInput(ns("fit_signal_S"), "Free ligand", FALSE),
-          checkboxInput(ns("fit_signal_ES"), "Complex", TRUE),
-          checkboxInput(ns("fit_t0"), "Fit t0", TRUE),
+          checkboxInput(ns("fit_signal_ES"), "Bound complex (ES)", TRUE),
+          checkboxInput(ns("fit_t0"), "Fit time offset t0 (s)", TRUE),
+          p("Positive t0 advances the calculated reaction by t0 seconds."),
           footer = tagList(
             actionButton(ns("submitOBS"), "Submit"),
             modalButton("Cancel")
@@ -635,6 +660,12 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
 
 
     observeEvent(input$submitIF, {
+      req(state$fit_dataset_loaded)
+      if (!any(c(input$fit_signal_E, input$fit_signal_S, input$fit_signal_ES))) {
+        pop_up_warning("Select at least one species signal coefficient to fit.")
+        req(FALSE)
+      }
+      validate_solution_concentrations()
       # close the modal dialog
       removeModal()
 
@@ -651,11 +682,19 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
 
       pop_up_success("The fitting has been completed.")
 
+      state$solution_model <- "one_binding_site_if"
+      state$k_obs_plot_shown <- FALSE
       state$kinetics_table_shown_sol <- TRUE
       state$kinetics_fit_done <- TRUE
     })
 
     observeEvent(input$submitOBS, {
+      req(state$fit_dataset_loaded)
+      if (!any(c(input$fit_signal_E, input$fit_signal_S, input$fit_signal_ES))) {
+        pop_up_warning("Select at least one species signal coefficient to fit.")
+        req(FALSE)
+      }
+      validate_solution_concentrations()
       # close the modal dialog
       removeModal()
 
@@ -672,6 +711,8 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
 
       pop_up_success("The fitting has been completed.")
 
+      state$solution_model <- "one_binding_site"
+      state$k_obs_plot_shown <- FALSE
       state$kinetics_table_shown_sol <- TRUE
       state$kinetics_fit_done <- TRUE
     })
