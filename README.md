@@ -1,3 +1,5 @@
+<!-- This file contains an AI-generated documentation link. -->
+
 # The KinGenie app
 
 Last time updated: October 2026
@@ -15,6 +17,8 @@ KinGenie is an R shiny application to analyse binding kinetics data. The workflo
 4) Export: Export the fitted curves.
 
 The data import, processing and fitting functions are taken from the Python package [pyKinGenie](https://github.com/osvalB/pykingenie)
+
+For input formats, model equations, parameter definitions, and analysis guidance, see the [KinGenie user documentation](appFiles/KinGenie/docs/KinGenieUserDocumentation.md).
 
 ## Fast installation
 
