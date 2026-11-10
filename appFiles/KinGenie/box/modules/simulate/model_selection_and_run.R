@@ -1,3 +1,5 @@
+# AI-generated corrections align surface and solution simulations with pyKinGenie 1.0.19.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   . / export[
     simResultsExportUI
@@ -24,6 +26,7 @@ box::use(
     selectInput,
     span,
     tagList,
+    updateNumericInput,
     updateSelectInput
   ],
   shinydashboard[
@@ -109,6 +112,8 @@ modelSelectionAndRunUI <- function(id) {
 
 #' @export
 modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
+  # AI-generated correction: map model parameters explicitly and retain solution relaxation rates.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -119,7 +124,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
       if (model_type_sim == "surface") {
         updateSelectInput(session, "model_selected_sim", choices = c(
           "1:1" = "one_site",
-          #"1:1 (mass transport limitation)" = "one_site_mtl",
+          "1:1 (mass transport limitation)" = "one_site_mtl",
           "1:1 (induced fit)" = "one_site_induced_fit",
           "1:1 (conformational selection)" = "one_site_conformational_selection",
           "2:1 Heterogeneous analyte" = "heterogeneous_analyte",
@@ -170,8 +175,10 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
           sim_state$total_time <- 1
           sim_state$kon_sim_1to1_adv <- 100
           sim_state$koff_sim_1to1_adv <- 100
-          sim_state$kc_sim_1to1_adv <- 1
-          sim_state$krev_sim_1to1_adv <- 10
+          # AI-generated correction: paper k_r is forward (k_c), k_e is reverse (k_rev).
+          # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
+          sim_state$kc_sim_1to1_adv <- 10
+          sim_state$krev_sim_1to1_adv <- 1
           sim_state$protein_conc_sim <- 0.5
           sim_state$init_lig_sim_solution <- 1.8
           sim_state$lig_dil_factor_sim <- 1.6
@@ -201,6 +208,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
         sim_state$kc_sim_1to1_adv <- 1
         sim_state$krev_sim_1to1_adv <- 10
       }
+      # Keep the visible time step synchronized with model-specific defaults.
+      updateNumericInput(session, "time_step", value = sim_state$time_step)
     })
 
     observeEvent(input$btn_cal_simulation, {
@@ -209,8 +218,6 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
       model_type_sim <- input$model_type_sim
       model_selected_sim <- input$model_selected_sim
-
-      print_model_message(model_type_sim, model_selected_sim)
 
       # 0. Default number of cycles to one, it will change if we have single-cycle-kinetics
       numb_cycles <- 1
@@ -221,6 +228,41 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
       } else {
         init_lig_sim <- sim_state$init_lig_sim_solution
       }
+
+      # AI-generated: validate solution inputs before constructing dilution/time grids.
+      # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
+      if (model_type_sim == "solution") {
+        concentrations <- c(init_lig_sim, sim_state$protein_conc_sim)
+        positive <- c(sim_state$lig_dil_factor_sim, sim_state$prot_dil_factor_sim,
+                      sim_state$time_step, sim_state$total_time)
+        counts <- c(sim_state$numb_dil_sim, sim_state$numb_dil_sim_prot)
+        rates <- if (model_selected_sim == "one_site") {
+          c(sim_state$kd_sim_1to1, sim_state$koff_sim_1to1)
+        } else {
+          c(sim_state$kon_sim_1to1_adv, sim_state$koff_sim_1to1_adv,
+            sim_state$kc_sim_1to1_adv, sim_state$krev_sim_1to1_adv)
+        }
+        coefficients <- c(sim_state$signal_E, sim_state$signal_S,
+          if (model_selected_sim == "one_site_induced_fit") {
+            c(sim_state$signal_ES_int, sim_state$signal_ES)
+          } else sim_state$signal_ES_simple)
+        if (length(concentrations) != 2L || any(!is.finite(concentrations) | concentrations < 0) ||
+            length(positive) != 4L || any(!is.finite(positive) | positive <= 0) ||
+            length(counts) != 2L || any(!is.finite(counts) | counts < 0 | counts != floor(counts)) ||
+            length(rates) != (if (model_selected_sim == "one_site") 2L else 4L) ||
+            any(!is.finite(rates) | rates <= 0) ||
+            length(coefficients) != (if (model_selected_sim == "one_site_induced_fit") 4L else 3L) ||
+            any(!is.finite(coefficients)) ||
+            sim_state$total_time < sim_state$time_step) {
+          pop_up_warning("Use nonnegative concentrations; positive dilution factors, time step and kinetic parameters;
+            nonnegative integer dilution counts; and finite signal coefficients.
+            Total time must be at least one time step.")
+          req(FALSE)
+        }
+      }
+
+      # Show the model information only after invalid inputs have been rejected.
+      print_model_message(model_type_sim, model_selected_sim)
 
       lig_concs <- init_lig_sim / (sim_state$lig_dil_factor_sim^(0:floor(sim_state$numb_dil_sim)))
 
@@ -380,8 +422,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
             if (model_selected_sim == "one_site_mtl") {
               signal <- pykingenie$solve_ode_one_site_mass_transport_association(
-                np_association_time,
-                0, lc / 2, lc, Kd, k_off, k_tr, smax
+                t = np_association_time, s1_0 = 0, analyte_conc = lc,
+                K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
               )
             }
 
@@ -475,7 +517,10 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
             }
 
             if (model_selected_sim == "one_site_mtl") {
-              signal <- pykingenie$solve_ode_one_site_mass_transport_dissociation(np_dissociation_time, s0, Kd, k_off, k_tr, smax)
+              signal <- pykingenie$solve_ode_one_site_mass_transport_dissociation(
+                t = np_dissociation_time, s1_0 = s0,
+                K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
+              )
             }
 
             if (model_selected_sim == "heterogeneous_ligand") {
@@ -660,7 +705,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
                 if (model_selected_sim == "one_site_mtl") {
                   signal <- pykingenie$solve_ode_one_site_mass_transport_association(
-                    np_association_time, last_signal, lc / 2, lc, Kd, k_off, k_tr, smax
+                    t = np_association_time, s1_0 = last_signal, analyte_conc = lc,
+                    K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
                   )
                 }
 
@@ -789,7 +835,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
                 if (model_selected_sim == "one_site_mtl") {
                   signal <- pykingenie$solve_ode_one_site_mass_transport_dissociation(
-                    np_dissociation_time, s0, Kd, k_off, k_tr, smax
+                    t = np_dissociation_time, s1_0 = s0,
+                    K_d = Kd, k_off = k_off, k_tr = k_tr, s_max = smax
                   )
                 }
 
@@ -933,7 +980,7 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
 
         if (total_time / time_step > 1e5) {
           pop_up_warning(
-            "The total number of steps is larger than 10000.
+            "The total number of steps is larger than 100000.
                         Please reduce the interaction time or increase the time step."
           )
 
@@ -957,7 +1004,8 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
           for (lc in lig_concs) {
             if (model_selected_sim == "one_site") {
               signal_single <- pykingenie$signal_ode_one_site_insolution(
-                np_array(interaction_time), k_off, Kd, pc, lc,
+                t = np_array(interaction_time), koff = k_off, Kd = Kd,
+                a_total = pc, b_total = lc,
                 signal_a = sim_state$signal_E,
                 signal_b = sim_state$signal_S,
                 signal_complex = sim_state$signal_ES_simple
@@ -969,27 +1017,32 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
               y <- list(0, 0)
 
               signal_single <- pykingenie$signal_ode_induced_fit_insolution(
-                np_array(interaction_time), y, k_on, k_off, k_c, k_rev,
+                t = np_array(interaction_time), y = y,
+                k1 = k_on, k_minus1 = k_off, k2 = k_c, k_minus2 = k_rev,
                 E_tot = pc, S_tot = lc,
                 t0 = 0, signal_E = sim_state$signal_E, signal_S = sim_state$signal_S,
                 signal_ES_int = sim_state$signal_ES_int, signal_ES = sim_state$signal_ES
               )
 
-              k_obs <- pykingenie$get_kobs_induced_fit(lc, pc, k_rev, k_c, k_on, k_off)
+              k_obs <- pykingenie$get_kobs_induced_fit(
+                tot_lig = lc, tot_prot = pc, kr = k_rev, ke = k_c, kon = k_on, koff = k_off)
               k_obs_dominant <- c(k_obs_dominant, k_obs)
 
-              k_obs2 <- pykingenie$get_kobs_induced_fit(lc, pc, k_rev, k_c, k_on, k_off, dominant = FALSE)
+              k_obs2 <- pykingenie$get_kobs_induced_fit(
+                tot_lig = lc, tot_prot = pc, kr = k_rev, ke = k_c, kon = k_on, koff = k_off, dominant = FALSE)
               k_obs_non_dominant <- c(k_obs_non_dominant, k_obs2)
             }
 
             if (model_is_conf_sel) {
               # Concentration of E1, E2, S, and E2S
-              e_concs <- pykingenie$get_initial_concentration_conformational_selection(pc, k_c, k_rev)
+              e_concs <- pykingenie$get_initial_concentration_conformational_selection(
+                total_protein = pc, k1 = k_c, k_minus1 = k_rev)
 
               y <- list(e_concs[2], 0) # Initial concentrations of E2 and E2S
 
               signal_single <- pykingenie$signal_ode_conformational_selection_insolution(
-                np_array(interaction_time), y, k_c, k_rev, k_on, k_off,
+                t = np_array(interaction_time), y = y,
+                k1 = k_c, k_minus1 = k_rev, k2 = k_on, k_minus2 = k_off,
                 E_tot = pc,
                 S_tot = lc,
                 t0 = 0,
@@ -999,10 +1052,12 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
                 signal_E2S = sim_state$signal_ES_simple
               )
 
-              k_obs <- pykingenie$get_kobs_conformational_selection(lc, pc, k_rev, k_c, k_on, k_off)
+              k_obs <- pykingenie$get_kobs_conformational_selection(
+                tot_lig = lc, tot_prot = pc, kr = k_rev, ke = k_c, kon = k_on, koff = k_off)
               k_obs_dominant <- c(k_obs_dominant, k_obs)
 
-              k_obs2 <- pykingenie$get_kobs_conformational_selection(lc, pc, k_rev, k_c, k_on, k_off, dominant = FALSE)
+              k_obs2 <- pykingenie$get_kobs_conformational_selection(
+                tot_lig = lc, tot_prot = pc, kr = k_rev, ke = k_c, kon = k_on, koff = k_off, dominant = FALSE)
               k_obs_non_dominant <- c(k_obs_non_dominant, k_obs2)
             }
 
@@ -1023,7 +1078,9 @@ modelSelectionAndRunServer <- function(id, sim_state, sim_results, pykingenie) {
           "interaction_time"  = interaction_time,
           "signal_per_pc"     = signal_per_pc,
           "prot_concs"        = prot_concs,
-          "lig_concs"         = lig_concs
+          "lig_concs"         = lig_concs,
+          "k_obs_dominant_per_pc" = k_obs_dominant_per_pc,
+          "k_obs_non_dominant_per_pc" = k_obs_non_dominant_per_pc
         )
       }
 

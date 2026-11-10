@@ -1,3 +1,5 @@
+# AI-generated clarification: solution inputs are total concentrations at mixing.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   shiny[
     checkboxInput,
@@ -35,6 +37,8 @@ experimentalParamsUI <- function(id) {
 
 #' @export
 experimentalParamsServer <- function(id, sim_state) {
+  # AI-generated: distinguish conserved total concentrations from free concentrations.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -45,6 +49,12 @@ experimentalParamsServer <- function(id, sim_state) {
       model_selected <- sim_state$model_selected_sim
 
       tagList(
+        if (model_type == "solution") {
+          p("Enter total concentrations after mixing. The simulation starts with no complex.",
+            if (model_selected == "one_site_conformational_selection") {
+              "The unbound protein conformations start at equilibrium."
+            })
+        },
         ## ---- First row -------------------------------------------------------
         fluidRow(
           if (model_type == "surface") {
@@ -61,7 +71,7 @@ experimentalParamsServer <- function(id, sim_state) {
             column(
               4,
               p(
-                HTML("<b>[Ligand] (μM)</b>"),
+                HTML("<b>Total [Ligand] (μM)</b>"),
                 numericInput(ns("init_lig_sim_solution"), NULL, 0.1,
                   min = 0, max = 1e6
                 )
@@ -146,7 +156,7 @@ experimentalParamsServer <- function(id, sim_state) {
             column(
               4,
               p(
-                HTML("<b>[Protein] (μM)</b>"),
+                HTML("<b>Total [Protein] (μM)</b>"),
                 numericInput(ns("protein_conc_sim"), NULL, 0.1,
                   min = 0, max = 1e6
                 )

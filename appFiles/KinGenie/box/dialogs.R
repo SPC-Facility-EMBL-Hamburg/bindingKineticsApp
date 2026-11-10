@@ -1,3 +1,5 @@
+# AI-generated correction distinguishes physical and signal-scaled transport rates.
+# PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
 box::use(
   shinyalert[
     shinyalert
@@ -54,6 +56,8 @@ pop_up_success <- function(string, size = "m") {
 # Print message to user regarding the simulation model
 #' @export
 print_model_message <- function(model_type_sim, model_selected_sim) {
+  # AI-generated correction: explain the mass-transport parameter's signal units.
+  # PR #4: https://github.com/SPC-Facility-EMBL-Hamburg/bindingKineticsApp/pull/4
   c1 <- model_type_sim == "surface"
 
   model_typ_text <- ifelse(c1, "a surface-based binding model
@@ -144,15 +148,18 @@ print_model_message <- function(model_type_sim, model_selected_sim) {
             L<sub>surface</sub> + P ⇄ PL (binding step). <br>
             The chemical reactions are: <br>
             <span style="display: inline-block; text-align: center;">
-            k<sub>tr</sub><br>
+            k<sub>tr,c</sub><br>
             L<sub>bulk</sub> → L<sub>surface</sub> <br>
-            k<sub>tr</sub><br>
+            k<sub>tr,c</sub><br>
             L<sub>surface</sub> → L<sub>bulk</sub> <br>
             k<sub>on</sub><br>
             L<sub>surface</sub> + P → PL <br>
             k<sub>off</sub><br>
             PL → L<sub>surface</sub> + P <br>
             </span> <br>
+            The simulation parameter K<sub>tr</sub> has units of signal/(μM·s).
+            It includes the conversion from bound concentration to signal and differs
+            from the physical exchange rate k<sub>tr,c</sub> (1/s).<br>
             ', extra_txt, "
             Please wait until the simulation is completed.
             </p>"),
