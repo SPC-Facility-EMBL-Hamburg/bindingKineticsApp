@@ -20,6 +20,7 @@ appStateServer <- function(id) {
       ss_plot_shown = FALSE,
       ss_table_shown = FALSE,
       kinetics_ci_95_table_shown = FALSE,
+      loo_table_shown = FALSE,
       diagnostics_plot_shown = FALSE,
       fit_dataset_loaded = FALSE,
       ss_fit_done = FALSE,

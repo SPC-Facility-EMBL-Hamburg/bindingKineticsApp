@@ -45,7 +45,9 @@ box::use(
     box
   ],
   shinyjs[
-    hidden
+    hidden,
+    hide,
+    show
   ],
   tippy[
     tippy_this
@@ -170,10 +172,21 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
             )),
 
             # Button to calculate the asymmetric error
-            column(2, p(
+            column(4, p(
               HTML('<p style="margin-bottom:0px;"><br></p>'),
               actionButton(
                 inputId = ns("triggerAsymError"), label = "e. Confidence interval",
+                icon("calculator"),
+                style = "color: #fff; background-color: #337ab7;
+                            border-color: #2e6da4"
+              )
+            )),
+
+            # Button to calculate leave-one-out error
+            column(4, p(
+              HTML('<p style="margin-bottom:0px;"><br></p>'),
+              actionButton(
+                inputId = ns("triggerLeaveOneOutError"), label = "Leave-one-out errors",
                 icon("calculator"),
                 style = "color: #fff; background-color: #337ab7;
                             border-color: #2e6da4"
@@ -266,11 +279,14 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
         req(FALSE)
       }
 
+      hide("triggerLeaveOneOutError")
+
       for (name in c(
         "kinetics_table_shown",
         "ss_plot_shown",
         "ss_table_shown",
         "kinetics_ci_95_table_shown",
+        "loo_table_shown",
         "diagnostics_plot_shown",
         "fit_dataset_loaded",
         "ss_fit_done",
@@ -328,9 +344,9 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
         input$fittingRegion == "association_dissociation" &&
           input$fittingModel == "one_to_one"
       ) {
-        shinyjs::show("triggerAsymError")
+        show("triggerAsymError")
       } else {
-        shinyjs::hide("triggerAsymError")
+        hide("triggerAsymError")
       }
     })
 
@@ -339,8 +355,14 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
 
       state$kinetics_fit_done <- FALSE
       state$ss_fit_done <- FALSE
-
+      state$loo_table_shown <- FALSE
+      state$kinetics_ci_95_table_shown <- FALSE
       state$fit_dataset_loaded <- FALSE
+
+      # Reset loo errors 
+      for (name in pyKinetics$fittings_names) {
+        pyKinetics$fittings[[name]]$df_fit_loo <- NULL
+      }
 
       result <- tryCatch(
         {
@@ -375,7 +397,6 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
             fit_sigma = input$fitSigmaTwoToOne
           )
         }
-
 
         pop_up_success(
           "Steady state fitting done.
@@ -500,6 +521,8 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
         c2 <- grepl("asso", fittingRegion)
 
         state$diagnostics_plot_shown <- c1 & c2
+
+        show("triggerLeaveOneOutError")
       })
     })
 
@@ -510,6 +533,7 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
         "ss_plot_shown",
         "ss_table_shown",
         "kinetics_ci_95_table_shown",
+        "loo_table_shown",
         "diagnostics_plot_shown",
         "ss_fit_done",
         "kinetics_fit_done"
@@ -537,6 +561,25 @@ fitControlsServer <- function(id, state, dataset, pyKinetics, logbook) {
       pop_up_success("Asymmetric error calculated for K_d and k_off.")
 
       logbook$append("Asymmetric error calculated for K_d and k_off.", add_empty_line = TRUE)
+    })
+
+    observeEvent(input$triggerLeaveOneOutError, {
+      req(state$fit_dataset_loaded)
+      req(state$kinetics_fit_done)
+
+      pop_up_info(
+        "Calculating the leave-one-out errors. Please wait some minutes for the calculations to finish."
+      )
+
+      pyKinetics$calculate_leave_one_out_errors()
+
+      # Create the tab with the leave-one-out errors
+
+      state$loo_table_shown <- TRUE
+
+      pop_up_success("Leave-one-out errors calculated.")
+
+      logbook$append("Leave-one-out errors calculated.", add_empty_line = TRUE)
     })
 
     observeEvent(input$triggerCreateDatasetSolution, {

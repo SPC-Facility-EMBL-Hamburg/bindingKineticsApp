@@ -58,7 +58,8 @@ test_that("KinGenie load example and fit workflow", {
 
   expect_values <- function(module_name,outputs) {
     app$expect_values(
-        output = paste0(module_name, "-", outputs)
+        output = paste0(module_name, "-", outputs),
+        screenshot_args = FALSE
     )
   }
 
@@ -254,6 +255,14 @@ test_that("KinGenie load example and fit workflow", {
   app$click(selector = "a[data-value='kineticsParamsTable']")
   wait_for_idle()
   expect_values("fitResults",c("fittingInfoKinetics"))
+
+  click("fitControls-triggerLeaveOneOutError")
+  wait_for_idle()
+  accept_modal()
+  app$click(selector = "a[data-value='looParamsTable']")
+  wait_for_idle()
+  expect_values("fitResults",c("fittingInfoLeaveOneOut"))
+
   app$stop()
 })
 
