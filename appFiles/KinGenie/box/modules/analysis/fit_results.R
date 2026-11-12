@@ -83,6 +83,9 @@ fitResultsServer <- function(id, state, pyKinetics, plot_config_reac, logbook) {
           },
           if (state$kinetics_ci_95_table_shown) {
             tabPanel("Asymmetric error", tableOutput(ns("fittingInfoKineticsCI95")))
+          },
+          if (state$loo_table_shown) {
+            tabPanel("Leave-one-out errors", value = "looParamsTable", tableOutput(ns("fittingInfoLeaveOneOut")))
           }
         )
       } else {
@@ -207,11 +210,33 @@ fitResultsServer <- function(id, state, pyKinetics, plot_config_reac, logbook) {
       {
         req(state$kinetics_fit_done)
         req(state$fit_dataset_loaded)
+        req(state$kinetics_ci_95_table_shown)
 
         dfs <- list()
 
         for (name in pyKinetics$fittings_names) {
           py_df <- pyKinetics$fittings[[name]]$fit_params_kinetics_ci95
+          df <- pandas_to_r(py_df)
+          df$Name <- name
+
+          dfs[[length(dfs) + 1]] <- df
+        }
+
+        do.call(rbind, dfs)
+      },
+      digits = 5
+    )
+
+    output$fittingInfoLeaveOneOut <- renderTable(
+      {
+        req(state$kinetics_fit_done)
+        req(state$fit_dataset_loaded)
+        req(state$loo_table_shown)
+
+        dfs <- list()
+
+        for (name in pyKinetics$fittings_names) {
+          py_df <- pyKinetics$fittings[[name]]$df_fit_loo
           df <- pandas_to_r(py_df)
           df$Name <- name
 

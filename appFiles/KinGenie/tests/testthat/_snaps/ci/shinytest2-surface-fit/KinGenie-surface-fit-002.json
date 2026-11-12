@@ -1,0 +1,5 @@
+{
+  "output": {
+    "fitResults-fittingInfoLeaveOneOut": "<table  class = 'table shiny-table table- spacing-s' style = 'width:auto;'>\n<thead> <tr> <th style='text-align: left;'> k_on [1/(s*µM)] <\/th> <th style='text-align: left;'> k_off [1/s] <\/th> <th style='text-align: left;'> k_c [1/s] <\/th> <th style='text-align: left;'> k_rev [1/s] <\/th> <th style='text-align: left;'> Name <\/th>  <\/tr> <\/thead> <tbody>\n  <tr> <td> 3.33e-01 ± 6.11e-03 <\/td> <td> 6.89e-03 ± 6.87e-04 <\/td> <td> 2.22e-03 ± 3.01e-04 <\/td> <td> 1.00e-03 ± 1.98e-04 <\/td> <td> wt - imd <\/td> <\/tr>\n   <\/tbody> <\/table>"
+  }
+}
